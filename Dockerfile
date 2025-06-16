@@ -22,3 +22,14 @@ RUN cabal v1-install /home/ubuntu/libraries/hasktorch/hasktorch /home/ubuntu/lib
 
 WORKDIR /home/ubuntu
 RUN cabal v1-install ./libraries/hasktorch-tools ./libraries/nlp-tools --ghc-options "-j1 +RTS -A128m -n2m -RTS"
+
+# Install additional tools for visualization
+RUN sudo apt-get update && sudo apt-get install -y gnuplot graphviz
+
+RUN sudo apt-get update && \
+    sudo apt-get install -y locales fonts-ipafont && \
+    sudo locale-gen ja_JP.UTF-8
+    
+ENV LANG=ja_JP.UTF-8
+ENV LANGUAGE=ja_JP:ja
+ENV LC_ALL=ja_JP.UTF-8

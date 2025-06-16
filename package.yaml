@@ -47,6 +47,10 @@ executables:
     dependencies:
     - Research
     - sqlite-simple
+    - containers
+    - bytestring
+    - aeson
+    - process
 
 tests:
   Research-test:
