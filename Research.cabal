@@ -40,7 +40,9 @@ library
 executable Research-exe
   main-is: Main.hs
   other-modules:
-      Tree
+      DBAccess
+      FileExport
+      TreeBuilder
       Paths_Research
   autogen-modules:
       Paths_Research
@@ -49,7 +51,11 @@ executable Research-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Research
+    , aeson
     , base >=4.7 && <5
+    , bytestring
+    , containers
+    , process
     , sqlite-simple
   default-language: Haskell2010
 
