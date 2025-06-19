@@ -49,6 +49,18 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -main-is DataLoading
+    dependencies:
+    - Research
+
+  Preprocess:
+    main:                Preprocess.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is Preprocess
     dependencies:
     - Research
 
