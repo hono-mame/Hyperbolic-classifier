@@ -1,12 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main where
+module DataLoading (main) where
 
 import DBAccess (fetchWordPairs)
-import TreeUtils (buildParentChildMap, findRoots, buildTreeSafe)
+import TreeBuilder (buildParentChildMap, findRoots, buildTreeSafe)
 import FileExport (saveTreeAsShow, saveTreeAsDOT, saveTreeAsPNG, saveTreeAsEdgeList)
 import Data.Tree (Tree(..), drawTree)
-import Data.List (intercalate)
 
 main :: IO ()
 main = do
