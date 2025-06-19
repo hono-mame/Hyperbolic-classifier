@@ -27,6 +27,7 @@ library
   exposed-modules:
       DBAccess
       FileExport
+      PreprocessUtils
       TreeBuilder
   other-modules:
       Paths_Research
