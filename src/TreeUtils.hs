@@ -1,4 +1,4 @@
-module TreeBuilder
+module TreeUtils
   ( buildParentChildMap
   , findRoots
   , buildTreeSafe

@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      DBAccess
+      FileExport
+      TreeUtils
   other-modules:
       Paths_Research
   autogen-modules:
@@ -34,15 +36,17 @@ library
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , process
+    , sqlite-simple
   default-language: Haskell2010
 
-executable Research-exe
-  main-is: Main.hs
+executable DataLoading
+  main-is: DataLoading.hs
   other-modules:
-      DBAccess
-      FileExport
-      TreeBuilder
       Paths_Research
   autogen-modules:
       Paths_Research
@@ -71,5 +75,10 @@ test-suite Research-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Research
+    , aeson
     , base >=4.7 && <5
+    , bytestring
+    , containers
+    , process
+    , sqlite-simple
   default-language: Haskell2010

@@ -21,6 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- sqlite-simple
+- containers
+- bytestring
+- aeson
+- process
 
 ghc-options:
 - -Wall
@@ -37,8 +42,8 @@ library:
   source-dirs: src
 
 executables:
-  Research-exe:
-    main:                Main.hs
+  DataLoading:
+    main:                DataLoading.hs
     source-dirs:         app
     ghc-options:
     - -threaded
@@ -46,11 +51,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - Research
-    - sqlite-simple
-    - containers
-    - bytestring
-    - aeson
-    - process
 
 tests:
   Research-test:
