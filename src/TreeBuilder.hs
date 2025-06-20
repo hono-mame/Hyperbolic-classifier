@@ -1,5 +1,6 @@
 module TreeBuilder
   ( buildParentChildMap
+  , buildParentMap
   , findRoots
   , buildTreeSafe
   , WordPair
@@ -12,6 +13,7 @@ import qualified Data.Set as Set
 
 type WordPair = (String, String)
 type ChildMap  = Map.Map String [String]
+type ParentMap = Map.Map String String
 
 buildParentChildMap :: 
     [WordPair] ->   -- input list of word pairs
@@ -19,6 +21,13 @@ buildParentChildMap ::
 buildParentChildMap pairs = Map.fromListWith (++) [(p, [c]) | (p, c) <- pairs]
 {-
 ("A", ["B"]) ("A", ["C"]) ("A", ["D"]) → ("A", ["B", "C", "D"])
+-}
+
+buildParentMap :: [WordPair] -> ParentMap
+buildParentMap pairs = Map.fromList [(c, p) | (p, c) <- pairs]
+{-
+make pairs like (child, parent) 
+this is used for finding the path to root and common ancestor
 -}
 
 findRoots :: 
