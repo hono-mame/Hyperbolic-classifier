@@ -5,13 +5,16 @@ module DBAccess
   , WordPair
   ) where
 
+import Data.String (fromString)
 import Database.SQLite.Simple
 -- https://hackage.haskell.org/package/sqlite-simple-0.4.19.0/docs/Database-SQLite-Simple.html
 
 type WordPair = (String, String)
 
-sqlQuery :: Query
-sqlQuery = "SELECT w1.lemma, w2.lemma \
+fetchWordPairs :: Int -> IO [WordPair]
+fetchWordPairs limit = do
+  db <- open "data/wnjpn.db"
+  let sqlQuery = Query $ "SELECT w1.lemma, w2.lemma \
            \FROM synlink AS sl \
            \INNER JOIN synset AS sy1 ON sy1.synset = sl.synset1 \
            \INNER JOIN synset AS sy2 ON sy2.synset = sl.synset2 \
@@ -22,13 +25,7 @@ sqlQuery = "SELECT w1.lemma, w2.lemma \
            \WHERE sl.link = 'hypo' \
            \AND se1.lang = 'jpn' AND se2.lang = 'jpn' \
            \AND w1.lang = 'jpn' AND w2.lang = 'jpn' \
-           \LIMIT 50;"
-
-
-fetchWordPairs :: 
-    IO [WordPair]   -- fetch word pairs from the database
-fetchWordPairs = do
-  db <- open "data/wnjpn.db"
+           \LIMIT " <> (fromString . show) limit <> ";"
   results <- query_ db sqlQuery
   close db
   return results
