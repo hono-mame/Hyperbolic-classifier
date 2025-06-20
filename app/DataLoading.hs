@@ -9,7 +9,7 @@ import Data.Tree (Tree(..), drawTree)
 
 main :: IO ()
 main = do
-  let limit = 50
+  let limit = 10000
   results <- fetchWordPairs limit
   let treeMap = buildParentChildMap results
       roots = findRoots results
@@ -23,5 +23,5 @@ main = do
       saveTreeAsShow "data/tree_show.txt" unifiedTree
       saveTreeAsDOT "data/tree.dot" unifiedTree
       saveTreeAsEdgeList "data/tree.edges" unifiedTree
-      saveTreeAsPNG "data/tree.dot" "data/tree.png"
+      --saveTreeAsPNG "data/tree.dot" "data/tree.png"
       putStrLn "Tree saved as (.txt, .dot, .edges, .png)."

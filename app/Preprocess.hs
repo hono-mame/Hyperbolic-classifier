@@ -10,22 +10,23 @@ import FileExport (saveTreeAsDOT, saveTreeAsPNG)
 
 main :: IO ()
 main = do
-  pairs <- loadEdges "data/tree_test.edges"
-  -- pairs <- loadEdges "data/tree.edges"
+  -- pairs <- loadEdges "data/tree_test.edges"
+  pairs <- loadEdges "data/tree.edges"
   let cmap = buildParentChildMap pairs
       pmap = buildParentMap pairs
       tree = buildTreeSafe cmap "entity"
 
   -- for test
-  saveTreeAsDOT "data/tree_test.dot" tree
-  saveTreeAsPNG "data/tree_test.dot" "data/tree_test.png"
-  putStrLn "Tree saved as PNG."
+  -- saveTreeAsDOT "data/tree_test.dot" tree
+  -- saveTreeAsPNG "data/tree_test.dot" "data/tree_test.png"
+  -- putStrLn "Tree saved as PNG."
 
   -- putStrLn "Tree structure:"
   -- putStrLn $ drawTree tree
 
-  let nodeA = "科学"
-      nodeB = "N"
+  putStrLn "---------- check ----------"
+  let nodeA = "目"
+      nodeB = "毛"
 
   case distanceBetween pmap nodeA nodeB of
     Left errMsg -> putStrLn $ "error: " ++ errMsg
