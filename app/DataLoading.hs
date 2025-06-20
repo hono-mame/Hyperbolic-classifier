@@ -3,7 +3,7 @@
 module DataLoading (main) where
 
 import DBAccess (fetchWordPairs)
-import TreeBuilder (buildParentChildMap, findRoots, buildTreeSafe)
+import TreeUtils (buildParentChildMap, findRoots, buildTreeSafe)
 import FileExport (saveTreeAsShow, saveTreeAsDOT, saveTreeAsPNG, saveTreeAsEdgeList)
 import Data.Tree (Tree(..), drawTree)
 
