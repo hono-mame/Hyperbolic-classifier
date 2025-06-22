@@ -28,6 +28,7 @@ main = do
   let nodeA = "目"
       nodeB = "毛"
 
-  case distanceBetween pmap nodeA nodeB of
+  result <- distanceBetween pmap nodeA nodeB
+  case result of
     Left errMsg -> putStrLn $ "error: " ++ errMsg
     Right dist -> putStrLn $ "Distance between " ++ nodeA ++ " and " ++ nodeB ++ ": " ++ show dist

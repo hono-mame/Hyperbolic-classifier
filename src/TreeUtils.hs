@@ -16,6 +16,7 @@ import Data.Tree (Tree(..))
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import System.IO (readFile)
+import Data.List (intercalate)
 
 type WordPair = (String, String)
 type ChildMap  = Map.Map String [String]
@@ -66,7 +67,9 @@ loadEdges ::
   IO [(String, String)] -- load edges from the file
 loadEdges path = do
   contents <- readFile path
-  return $ map parseEdge (filter (not . null) (lines contents))
+  let pairs = map parseEdge (filter (not . null) (lines contents))
+      filteredPairs = filter (\(p, c) -> p /= c) pairs  -- filter out self-loops
+  return filteredPairs
 
 loadTree :: 
   FilePath -> -- path to the edges file
@@ -82,13 +85,15 @@ pathToRoot pmap node = case Map.lookup node pmap of
   Nothing -> [node]
   Just parent -> node : pathToRoot pmap parent
 
-distanceBetween :: ParentMap -> String -> String -> Either String Int
+distanceBetween :: ParentMap -> String -> String -> IO (Either String Int)
 distanceBetween pmap nodeA nodeB =
   case (Map.member nodeA pmap || nodeA == "entity", Map.member nodeB pmap || nodeB == "entity") of
-    (False, _) -> Left $ "Node '" ++ nodeA ++ "' does not exist."
-    (_, False) -> Left $ "Node '" ++ nodeB ++ "' does not exist."
-    (True, True) ->
+    (False, _) -> return $ Left $ "Node '" ++ nodeA ++ "' does not exist."
+    (_, False) -> return $ Left $ "Node '" ++ nodeB ++ "' does not exist."
+    (True, True) -> do
       let pathA = reverse $ pathToRoot pmap nodeA
-          pathB = reverse $ pathToRoot pmap nodeB
-          common = length $ takeWhile (uncurry (==)) $ zip pathA pathB
-      in Right $ (length pathA - common) + (length pathB - common)
+      putStrLn $ "Path A: " ++ intercalate " -> " pathA
+      let pathB = reverse $ pathToRoot pmap nodeB
+      putStrLn $ "Path B: " ++ intercalate " -> " pathB
+      let common = length $ takeWhile (uncurry (==)) $ zip pathA pathB
+      return $ Right $ (length pathA - common) + (length pathB - common)
