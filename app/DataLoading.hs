@@ -2,15 +2,16 @@
 
 module DataLoading (main) where
 
-import DBAccess (fetchWordPairs)
+import DBAccess (fetchWordPairs, fetchWordPairsFull, countWordPairs)
 import TreeUtils (buildParentChildMap, findRoots, buildTreeSafe)
 import FileExport (saveTreeAsShow, saveTreeAsDOT, saveTreeAsPNG, saveTreeAsEdgeList)
 import Data.Tree (Tree(..), drawTree)
 
 main :: IO ()
 main = do
-  let limit = 10000
+  let limit = 40000
   results <- fetchWordPairs limit
+  --results <- fetchWordPairsFull
   let treeMap = buildParentChildMap results
       roots = findRoots results
   case roots of
@@ -19,9 +20,9 @@ main = do
       let rootTrees = map (buildTreeSafe treeMap) roots
           unifiedTree = Node "entity" rootTrees
 
-      putStrLn $ drawTree unifiedTree
-      saveTreeAsShow "data/tree_show.txt" unifiedTree
-      saveTreeAsDOT "data/tree.dot" unifiedTree
+      -- putStrLn $ drawTree unifiedTree
+      -- saveTreeAsShow "data/tree_show.txt" unifiedTree
+      -- saveTreeAsDOT "data/tree.dot" unifiedTree
       saveTreeAsEdgeList "data/tree.edges" unifiedTree
-      --saveTreeAsPNG "data/tree.dot" "data/tree.png"
+      -- saveTreeAsPNG "data/tree.dot" "data/tree.png"
       putStrLn "Tree saved as (.txt, .dot, .edges, .png)."
