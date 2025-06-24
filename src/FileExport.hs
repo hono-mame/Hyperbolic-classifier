@@ -13,6 +13,7 @@ import Data.Tree (Tree(..))
 import System.Process (callCommand)
 import System.IO (withFile, IOMode(WriteMode), hSetEncoding, utf8, hPutStrLn)
 import Data.List (intercalate)
+import qualified Data.Set as Set
 
 showTreeCustom :: 
     Tree String -> --input tree
@@ -64,6 +65,15 @@ saveTreeAsEdgeList ::
     FilePath -> --output path (.edges)
     Tree String -> --input tree
     IO ()   -- save tree as edge list
-saveTreeAsEdgeList path tree = writeFile path (unlines $ flattenEdges tree)
+saveTreeAsEdgeList path tree = do
+  let edgeList = flattenEdges tree
+      uniqueEdges = Set.toList $ Set.fromList edgeList
+  writeFile path (unlines uniqueEdges)
   where
-    flattenEdges (Node x cs) = concatMap (\c@(Node y _) -> (x ++ "\t" ++ y) : flattenEdges c) cs
+    flattenEdges :: Tree String -> [String]
+    flattenEdges (Node x cs) =
+      concatMap (\c@(Node y _) ->
+        if x /= y
+          then (x ++ "\t" ++ y) : flattenEdges c
+          else flattenEdges c
+      ) cs
