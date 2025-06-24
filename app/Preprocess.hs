@@ -24,9 +24,10 @@ main = do
   -- putStrLn "Tree structure:"
   -- putStrLn $ drawTree tree
 
-  putStrLn "---------- check ----------"
-  let nodeA = "目"
-      nodeB = "毛"
+  putStrLn "Enter Node A:"
+  nodeA <- getLine
+  putStrLn "Enter Node B:"
+  nodeB <- getLine
 
   result <- distanceBetween pmap nodeA nodeB
   case result of
