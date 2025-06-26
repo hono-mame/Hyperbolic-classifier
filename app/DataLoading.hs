@@ -9,7 +9,7 @@ import Data.Tree (Tree(..), drawTree)
 
 main :: IO ()
 main = do
-  let limit = 40000
+  let limit = 5000
   results <- fetchWordPairs limit
   --results <- fetchWordPairsFull
   let treeMap = buildParentChildMap results
