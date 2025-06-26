@@ -26,6 +26,8 @@ dependencies:
 - bytestring
 - aeson
 - process
+- random
+- random-shuffle
 
 ghc-options:
 - -Wall
@@ -63,6 +65,18 @@ executables:
     - -main-is Preprocess
     dependencies:
     - Research
+  
+  GenerateDatasetMLP:
+    main:                GenerateDatasetMLP.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is GenerateDatasetMLP
+    dependencies:
+    - Research
+
 
 tests:
   Research-test:
