@@ -51,7 +51,6 @@ executable DataLoading
   main-is: DataLoading.hs
   other-modules:
       GenerateDatasetMLP
-      MLPMain
       Preprocess
       Paths_Research
   autogen-modules:
@@ -75,7 +74,6 @@ executable GenerateDatasetMLP
   main-is: GenerateDatasetMLP.hs
   other-modules:
       DataLoading
-      MLPMain
       Preprocess
       Paths_Research
   autogen-modules:
@@ -95,36 +93,11 @@ executable GenerateDatasetMLP
     , sqlite-simple
   default-language: Haskell2010
 
-executable MLPMain
-  main-is: MLPMain.hs
-  other-modules:
-      DataLoading
-      GenerateDatasetMLP
-      Preprocess
-      Paths_Research
-  autogen-modules:
-      Paths_Research
-  hs-source-dirs:
-      app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is MLPMain
-  build-depends:
-      Research
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , process
-    , random
-    , random-shuffle
-    , sqlite-simple
-  default-language: Haskell2010
-
 executable Preprocess
   main-is: Preprocess.hs
   other-modules:
       DataLoading
       GenerateDatasetMLP
-      MLPMain
       Paths_Research
   autogen-modules:
       Paths_Research
