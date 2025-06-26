@@ -27,6 +27,7 @@ library
   exposed-modules:
       DBAccess
       FileExport
+      MLPDataGenerateUtils
       TreeUtils
   other-modules:
       Paths_Research
@@ -41,13 +42,15 @@ library
     , bytestring
     , containers
     , process
+    , random
+    , random-shuffle
     , sqlite-simple
   default-language: Haskell2010
 
 executable DataLoading
   main-is: DataLoading.hs
   other-modules:
-      GenerateDataset
+      GenerateDatasetMLP
       Preprocess
       Paths_Research
   autogen-modules:
@@ -62,11 +65,13 @@ executable DataLoading
     , bytestring
     , containers
     , process
+    , random
+    , random-shuffle
     , sqlite-simple
   default-language: Haskell2010
 
-executable GenerateDataset
-  main-is: GenerateDataset.hs
+executable GenerateDatasetMLP
+  main-is: GenerateDatasetMLP.hs
   other-modules:
       DataLoading
       Preprocess
@@ -75,7 +80,7 @@ executable GenerateDataset
       Paths_Research
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is GenerateDataset
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is GenerateDatasetMLP
   build-depends:
       Research
     , aeson
@@ -83,6 +88,8 @@ executable GenerateDataset
     , bytestring
     , containers
     , process
+    , random
+    , random-shuffle
     , sqlite-simple
   default-language: Haskell2010
 
@@ -90,7 +97,7 @@ executable Preprocess
   main-is: Preprocess.hs
   other-modules:
       DataLoading
-      GenerateDataset
+      GenerateDatasetMLP
       Paths_Research
   autogen-modules:
       Paths_Research
@@ -104,6 +111,8 @@ executable Preprocess
     , bytestring
     , containers
     , process
+    , random
+    , random-shuffle
     , sqlite-simple
   default-language: Haskell2010
 
@@ -124,5 +133,7 @@ test-suite Research-test
     , bytestring
     , containers
     , process
+    , random
+    , random-shuffle
     , sqlite-simple
   default-language: Haskell2010
