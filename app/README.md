@@ -10,7 +10,7 @@ Based on the constructed tree structure, this script takes two word inputs and o
 ```bash
 docker-compose exec hasktorch /bin/bash -c "cd /home/ubuntu/Research && stack run Preprocess"
 ```
-```
+```haskell
 Enter Node A:
 猛打
 Enter Node B:
