@@ -28,6 +28,10 @@ dependencies:
 - process
 - random
 - random-shuffle
+- vector
+- hasktorch
+- text
+- cassava
 
 ghc-options:
 - -Wall

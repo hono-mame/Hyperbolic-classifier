@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       DBAccess
+      Evaluation
       FileExport
       MLPDataGenerateUtils
       TreeUtils
@@ -40,11 +41,15 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 executable DataLoading
@@ -64,11 +69,15 @@ executable DataLoading
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 executable GenerateDatasetMLP
@@ -88,11 +97,15 @@ executable GenerateDatasetMLP
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 executable MLPMain
@@ -112,11 +125,15 @@ executable MLPMain
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 executable Preprocess
@@ -136,11 +153,15 @@ executable Preprocess
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 test-suite Research-test
@@ -158,9 +179,13 @@ test-suite Research-test
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
