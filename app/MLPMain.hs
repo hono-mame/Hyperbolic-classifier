@@ -7,7 +7,6 @@
 module MLPMain (main) where
 
 import Control.Monad (when)
-import Data.List (foldl', intersperse)
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
@@ -17,41 +16,20 @@ import Data.Maybe (catMaybes)
 import Data.Csv (decodeByName, FromNamedRecord)
 import qualified Data.Map.Strict as Map
 import GHC.Generics
-import Torch
-import Torch.Functional (mul, sigmoid, binaryCrossEntropyLoss')
-import Torch.Tensor (asTensor, asValue)
+import Torch.Functional (mul, sigmoid, binaryCrossEntropyLoss', logicalNot, sumAll, gt, squeezeAll)
+import Torch.Tensor (Tensor,asTensor, asValue, shape)
 import Evaluation (evalAccuracy, evalPrecision, evalRecall, calcF1, confusionMatrix, confusionMatrixPairs)
+import Torch.Device       (Device(..),DeviceType(..))
+import Torch.Layer.MLP    (MLPHypParams(..),ActName(..),mlpLayer,MLPParams)
+import Torch.Train        (update)
+import Torch.Optim        (GD(..),  foldLoop)
+import Torch.NN           (sample)
 
 data InputWordPair = InputWordPair
   { hyper :: String,
     hypo :: String,
     label :: Float
   } deriving (Show, Generic, FromNamedRecord)
-
-
-data MLPSpec = MLPSpec
-  { feature_counts :: [Int],
-    nonlinearitySpec :: Tensor -> Tensor
-  }
-
-data MLP = MLP
-  { layers :: [Linear],
-    nonlinearity :: Tensor -> Tensor
-  } deriving (Generic, Parameterized)
-
-instance Randomizable MLPSpec MLP where
-  sample MLPSpec {..} = do
-    let layer_sizes = mkLayerSizes feature_counts
-    linears <- mapM (sample . uncurry LinearSpec) layer_sizes
-    return $ MLP linears nonlinearitySpec
-    where
-      mkLayerSizes (a : b : t) = (a, b) : mkLayerSizes (b : t)
-      mkLayerSizes _ = []
-
-mlp :: MLP -> Tensor -> Tensor
-mlp MLP {..} input = foldl' revApply input $ intersperse nonlinearity $ map linear layers
-  where revApply x f = f x
-
 
 loadFastTextVec :: FilePath -> IO (Map.Map String [Float])
 loadFastTextVec path = do
@@ -92,25 +70,26 @@ loadWordPairData filePath embMap = do
       return (asTensor xs, asTensor ys)
 
 
-trainMLP :: MLP -> Tensor -> Tensor -> IO MLP
+trainMLP :: MLPParams -> Tensor -> Tensor -> IO MLPParams
 trainMLP initModel inputs targets = do
+  putStrLn $ "inputs shape in trainMLP: " ++ show (shape inputs)
+  putStrLn $ "targets shape in trainMLP: " ++ show (shape targets)
   (trainedModel, _) <- foldLoop (initModel, []) 200 $ \(state, losses) i -> do
-    let yPred = sigmoid (mlp state inputs)
-        loss = binaryCrossEntropyLoss' yPred targets
+    let yPred = mlpLayer state inputs
+        targets1d = squeezeAll targets
+        loss = binaryCrossEntropyLoss' yPred targets1d
         lossValue = asValue loss :: Float
-    -- putStrLn $ "ypred " ++ show i ++ ": " ++ show yPred
-    -- putStrLn $ "inputs " ++ show i ++ ": " ++ show inputs
-
-    when (i `mod` 50 == 0) $ putStrLn $ "Iter " ++ show i ++ ": Loss = " ++ show lossValue
-    (newState, _) <- runStep state GD loss 1e-5
+    when (i `mod` 1 == 0) $ putStrLn $ "Iter " ++ show i ++ ": Loss = " ++ show lossValue    
+    (newState, _) <- update state GD loss 1e-3
     return (newState, losses ++ [lossValue])
   return trainedModel
 
-evaluate :: MLP -> Tensor -> Tensor -> IO ()
+evaluate :: MLPParams -> Tensor -> Tensor -> IO ()
 evaluate model inputs targets = do
-  let preds = sigmoid (mlp model inputs)
+  let preds = sigmoid (mlpLayer model inputs)
+      targets1d = squeezeAll targets
       predLabels = gt preds 0.5
-      trueLabels = gt targets 0.5
+      trueLabels = gt targets1d 0.5
       tp = sumAll (mul predLabels trueLabels)
       tn = sumAll (mul (logicalNot predLabels) (logicalNot trueLabels))
       fp = sumAll (mul predLabels (logicalNot trueLabels))
@@ -131,17 +110,17 @@ evaluate model inputs targets = do
 main :: IO ()
 main = do
   putStrLn "Loading embeddings..."
-  embMap <- loadFastTextVec "data/MLP/entity_vector.model.test.txt"
+  embMap <- loadFastTextVec "data/MLP/entity_vector.model.txt"
 
   putStrLn "Loading training data..."
-  (trainX, trainY) <- loadWordPairData "data/MLP/train_small_test.csv" embMap
-  putStrLn $ "trainx shape: " ++ show (shape trainX)
+  (trainX, trainY) <- loadWordPairData "data/MLP/train.csv" embMap
+  -- putStrLn $ "trainx shape: " ++ show (shape trainX)
+  -- putStrLn $ "trainy shape: " ++ show (shape trainY)
+  -- putStrLn $ "trainy: " ++ show trainY
 
+  let device = Device CPU 0
   putStrLn "Initializing model..."
-  initModel <- sample $ MLPSpec
-    { feature_counts = [400, 128, 64, 1],  -- 200 + 200 = 400
-      nonlinearitySpec = relu
-    }
+  initModel <- sample $ MLPHypParams device 400 [(64,Relu),(8,Relu), (1,Id)]
 
   putStrLn "Training..."
   model <- trainMLP initModel trainX trainY

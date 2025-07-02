@@ -32,6 +32,7 @@ dependencies:
 - hasktorch
 - text
 - cassava
+- hasktorch-tools
 
 ghc-options:
 - -Wall
