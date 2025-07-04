@@ -16,7 +16,7 @@ import Data.Maybe (catMaybes)
 import Data.Csv (decodeByName, FromNamedRecord)
 import qualified Data.Map.Strict as Map
 import GHC.Generics
-import Torch.Functional (mul, sigmoid, binaryCrossEntropyLoss', logicalNot, sumAll, gt, squeezeAll)
+import Torch.Functional (mul, sigmoid, binaryCrossEntropyLoss', logicalNot, sumAll, gt, squeezeAll, clamp)
 import Torch.Tensor (Tensor,asTensor, asValue, shape)
 import Evaluation (evalAccuracy, evalPrecision, evalRecall, calcF1, confusionMatrix, confusionMatrixPairs)
 import Torch.Device       (Device(..),DeviceType(..))
@@ -75,10 +75,11 @@ trainMLP initModel inputs targets = do
   putStrLn $ "inputs shape in trainMLP: " ++ show (shape inputs)
   putStrLn $ "targets shape in trainMLP: " ++ show (shape targets)
   (trainedModel, _) <- foldLoop (initModel, []) 200 $ \(state, losses) i -> do
-    let yPred = mlpLayer state inputs
+    let yPred = sigmoid (clamp (-10.0) 10.0 (mlpLayer state inputs))
         targets1d = squeezeAll targets
         loss = binaryCrossEntropyLoss' yPred targets1d
         lossValue = asValue loss :: Float
+    putStrLn $ "yPred: " ++ show yPred
     when (i `mod` 1 == 0) $ putStrLn $ "Iter " ++ show i ++ ": Loss = " ++ show lossValue    
     (newState, _) <- update state GD loss 1e-3
     return (newState, losses ++ [lossValue])
