@@ -17,6 +17,7 @@ import Data.Csv (decodeByName, FromNamedRecord)
 import qualified Data.Map.Strict as Map
 import GHC.Generics
 import Torch.Functional (mul, sigmoid, binaryCrossEntropyLoss', logicalNot, sumAll, gt, squeezeAll, clamp)
+import qualified Torch.Functional as F
 import Torch.Tensor (Tensor,asTensor, asValue, shape)
 import Evaluation (evalAccuracy, evalPrecision, evalRecall, calcF1, confusionMatrix, confusionMatrixPairs)
 import Torch.Device       (Device(..),DeviceType(..))
@@ -64,9 +65,29 @@ loadWordPairData filePath embMap = do
                     let hVec = lookupEmbedding embMap hyper
                         yVec = lookupEmbedding embMap hypo
                         inputVec = hVec ++ yVec
-                    in (inputVec, [label])
+                        -- debug: check if hyper and hypo vectors are zero vectors
+                        isHyperZero = all (== 0.0) hVec
+                        isHypoZero = all (== 0.0) yVec
+                    in (hyper, hypo, hVec, yVec, inputVec, [label], isHyperZero, isHypoZero)
                   ) v
-          (xs, ys) = unzip rows
+      -- for debug
+      putStrLn "===== Sample Word Embeddings (first 10) ====="
+      mapM_ (\(h, y, hv, yv, _, l, isHZ, isYZ) -> do
+                putStrLn $ "Hyper: " ++ h ++ ", Embedding (first 5): " ++ show (take 5 hv) ++ if isHZ then " [ZERO VECTOR!]" else ""
+                putStrLn $ "Hypo : " ++ y ++ ", Embedding (first 5): " ++ show (take 5 yv) ++ if isYZ then " [ZERO VECTOR!]" else ""
+                putStrLn $ "Label: " ++ show l
+                putStrLn "-------------------------------------------"
+            ) (take 10 rows)
+
+      let (xs, ys) = unzip $ map (\(_,_,_,_,x,y,_,_) -> (x,y)) rows
+
+      -- for debug
+      let flatInputs = concat xs
+      putStrLn $ "Input data stats:"
+      putStrLn $ "  Min value: " ++ show (minimum flatInputs)
+      putStrLn $ "  Max value: " ++ show (maximum flatInputs)
+      putStrLn $ "  Mean value: " ++ show (sum flatInputs / fromIntegral (length flatInputs))
+      
       return (asTensor xs, asTensor ys)
 
 
@@ -111,17 +132,20 @@ evaluate model inputs targets = do
 main :: IO ()
 main = do
   putStrLn "Loading embeddings..."
-  embMap <- loadFastTextVec "data/MLP/entity_vector.model.txt"
+  embMap <- loadFastTextVec "data/MLP/entity_vector.model.test.txt"
+  putStrLn $ "Total words in embedding: " ++ show (Map.size embMap)
+  putStrLn "First 10 words in embedding:"
+  mapM_ putStrLn $ take 10 $ Map.keys embMap
 
   putStrLn "Loading training data..."
-  (trainX, trainY) <- loadWordPairData "data/MLP/train.csv" embMap
+  (trainX, trainY) <- loadWordPairData "data/MLP/train_small_test.csv" embMap
   -- putStrLn $ "trainx shape: " ++ show (shape trainX)
   -- putStrLn $ "trainy shape: " ++ show (shape trainY)
   -- putStrLn $ "trainy: " ++ show trainY
 
   let device = Device CPU 0
   putStrLn "Initializing model..."
-  initModel <- sample $ MLPHypParams device 400 [(64,Relu),(8,Relu), (1,Id)]
+  initModel <- sample $ MLPHypParams device 400 [(256,Selu),(64,Selu), (1,Id)]
 
   putStrLn "Training..."
   model <- trainMLP initModel trainX trainY
