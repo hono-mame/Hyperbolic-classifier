@@ -6,16 +6,18 @@
 
 module MLPRandomMain (main) where
 
-import Control.Monad (when)
+import Control.Monad (when, replicateM)
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Data.Text.Read as TR
 import qualified Data.Vector as V
+import qualified Data.Set as Set
 import Data.Maybe (catMaybes)
 import Data.Csv (decodeByName, FromNamedRecord)
 import qualified Data.Map.Strict as Map
 import GHC.Generics
+import System.Random (randomRIO)
 import Torch.Functional (mul, sigmoid, binaryCrossEntropyLoss', logicalNot, sumAll, gt, squeezeAll, clamp)
 import qualified Torch.Functional as F
 import Torch.Tensor (Tensor,asTensor, asValue, shape)
@@ -32,24 +34,25 @@ data InputWordPair = InputWordPair
     label :: Float
   } deriving (Show, Generic, FromNamedRecord)
 
-loadFastTextVec :: FilePath -> IO (Map.Map String [Float])
-loadFastTextVec path = do
-  contents <- TIO.readFile path
-  let ls = drop 1 $ T.lines contents
-  let entries = map parseLine ls
-  return $ Map.fromList $ catMaybes entries
+-- generate randomly initialized embeddings
+createRandomEmbeddings :: FilePath -> IO (Map.Map String [Float])
+createRandomEmbeddings csvPath = do
+  csvData <- BL.readFile csvPath
+  case decodeByName csvData of
+    Left err -> error $ "Failed to decode CSV: " ++ err
+    Right (_, v) -> do
+      let wordPairs = V.toList v
+          wordsSet = foldr (\InputWordPair{..} acc -> hyper : hypo : acc) [] wordPairs
+          uniqueWords = Map.keysSet $ Map.fromList $ zip wordsSet (repeat ())
+      embList <- mapM (\w -> do
+                          vec <- genRandomVec 200
+                          return (w, vec)
+                      )(Set.toList uniqueWords) 
+      return $ Map.fromList embList
 
-parseLine :: T.Text -> Maybe (String, [Float])
-parseLine line =
-  case T.words line of
-    [] -> Nothing
-    (w:vals) -> Just (T.unpack w, map (realToFrac . fst . parseFloat) vals)
-
-parseFloat :: T.Text -> (Double, T.Text)
-parseFloat t = case TR.double t of
-  Right x -> x
-  Left _ -> error $ "Can't parse float: " ++ T.unpack t
-
+-- Generate a random vector of given size
+genRandomVec :: Int -> IO [Float]
+genRandomVec dim = mapM (\_ -> randomRIO (-0.1, 0.1)) [1..dim]
 
 lookupEmbedding :: Map.Map String [Float] -> String -> [Float]
 lookupEmbedding embMap word = Map.findWithDefault (replicate 200 0.0) word embMap
@@ -131,21 +134,21 @@ evaluate model inputs targets = do
 
 main :: IO ()
 main = do
-  putStrLn "Loading embeddings..."
-  embMap <- loadFastTextVec "data/MLP/entity_vector.model.test.txt"
+  putStrLn "Initializing random embeddings..."
+  embMap <- createRandomEmbeddings "data/MLP/train_small.csv"
   putStrLn $ "Total words in embedding: " ++ show (Map.size embMap)
   putStrLn "First 10 words in embedding:"
   mapM_ putStrLn $ take 10 $ Map.keys embMap
 
   putStrLn "Loading training data..."
-  (trainX, trainY) <- loadWordPairData "data/MLP/train_small_test.csv" embMap
+  (trainX, trainY) <- loadWordPairData "data/MLP/train_small.csv" embMap
   -- putStrLn $ "trainx shape: " ++ show (shape trainX)
   -- putStrLn $ "trainy shape: " ++ show (shape trainY)
   -- putStrLn $ "trainy: " ++ show trainY
 
   let device = Device CPU 0
   putStrLn "Initializing model..."
-  initModel <- sample $ MLPHypParams device 400 [(256,Selu),(64,Selu), (1,Id)]
+  initModel <- sample $ MLPHypParams device 400 [(256,Selu),(256,Selu),(64,Selu), (1,Id)]
 
   putStrLn "Training..."
   model <- trainMLP initModel trainX trainY
