@@ -93,6 +93,17 @@ executables:
     dependencies:
     - Research
 
+  MLPRandomMain:
+    main:                MLPRandomMain.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is MLPRandomMain
+    dependencies:
+    - Research
+
 tests:
   Research-test:
     main:                Spec.hs

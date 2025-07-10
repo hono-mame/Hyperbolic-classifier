@@ -58,6 +58,7 @@ executable DataLoading
   other-modules:
       GenerateDatasetMLP
       MLPMain
+      MLPRandomMain
       Preprocess
       Paths_Research
   autogen-modules:
@@ -87,6 +88,7 @@ executable GenerateDatasetMLP
   other-modules:
       DataLoading
       MLPMain
+      MLPRandomMain
       Preprocess
       Paths_Research
   autogen-modules:
@@ -116,6 +118,7 @@ executable MLPMain
   other-modules:
       DataLoading
       GenerateDatasetMLP
+      MLPRandomMain
       Preprocess
       Paths_Research
   autogen-modules:
@@ -140,12 +143,43 @@ executable MLPMain
     , vector
   default-language: Haskell2010
 
+executable MLPRandomMain
+  main-is: MLPRandomMain.hs
+  other-modules:
+      DataLoading
+      GenerateDatasetMLP
+      MLPMain
+      Preprocess
+      Paths_Research
+  autogen-modules:
+      Paths_Research
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is MLPRandomMain
+  build-depends:
+      Research
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , cassava
+    , containers
+    , hasktorch
+    , hasktorch-tools
+    , process
+    , random
+    , random-shuffle
+    , sqlite-simple
+    , text
+    , vector
+  default-language: Haskell2010
+
 executable Preprocess
   main-is: Preprocess.hs
   other-modules:
       DataLoading
       GenerateDatasetMLP
       MLPMain
+      MLPRandomMain
       Paths_Research
   autogen-modules:
       Paths_Research
