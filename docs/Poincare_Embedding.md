@@ -66,7 +66,7 @@ fully unsupervised)
 双曲空間 H に埋め込みを行う。    
 Beltrami-Klein model, the hyperboloid model, and the Poincaré half-plane model などいろいろ存在している。    
 勾配法に基づく最適化に適している **Poincaré ball model** を採用。
-![definition](docs/photos/definition.png "definition")
+![definition](photos/definition.png "definition")
 
 階層構造は一般的に2次元で表現できるのでポアンカレ円盤 (B^2)で表現できるはずだが、ここではポアンカレ球 (B^d)を用いる。
 → 複数の潜在的な階層が共存する可能性があり、これらは必ずしも2次元でモデル化できるとは限らないから.     
