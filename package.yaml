@@ -28,6 +28,9 @@ dependencies:
 - process
 - random
 - random-shuffle
+- vector
+- hmatrix
+- split
 
 ghc-options:
 - -Wall
