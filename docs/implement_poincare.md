@@ -4,7 +4,8 @@
 - [x] Initialize embeddings  
 - [x] Output and verify initialized embedding values  
 - [x] Implement function that receives two words and returns the distance (in hyperbolic space)  
-- [ ] Implement training in Python & understand the original paper  
+- [x] Understand the implementation of training in Python & the original paper's logic
+→ detail:[Poincare_training](/docs/Poincare_training.pdf)  
 
 
 ## **Embedding Initialization**
@@ -39,3 +40,6 @@ def _init_embeddings(self):
 ```
 Distance between "事業年度" and "勧誘": 3.4402425272197796e-3
 ```
+
+### **Understand the training part**
+→ detail:[Poincare_training](/docs/Poincare_training.pdf)  
