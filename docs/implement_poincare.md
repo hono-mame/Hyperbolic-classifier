@@ -4,7 +4,7 @@
 - [x] Initialize embeddings  
 - [x] Output and verify initialized embedding values  
 - [x] Implement function that receives two words and returns the distance (in hyperbolic space)  
-- [x] Understand the implementation of training in Python & the original paper's logic
+- [x] Understand the implementation of training in Python & the original paper's logic    
 → detail:[Poincare_training](/docs/Poincare_training.pdf)  
 
 
