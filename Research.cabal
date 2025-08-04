@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       DBAccess
+      Evaluation
       FileExport
       MLPDataGenerateUtils
       TreeUtils
@@ -40,17 +41,24 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
+    , hasktorch-tools
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 executable DataLoading
   main-is: DataLoading.hs
   other-modules:
       GenerateDatasetMLP
+      MLPMain
+      MLPRandomMain
       Preprocess
       Paths_Research
   autogen-modules:
@@ -63,17 +71,24 @@ executable DataLoading
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
+    , hasktorch-tools
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 executable GenerateDatasetMLP
   main-is: GenerateDatasetMLP.hs
   other-modules:
       DataLoading
+      MLPMain
+      MLPRandomMain
       Preprocess
       Paths_Research
   autogen-modules:
@@ -86,11 +101,76 @@ executable GenerateDatasetMLP
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
+    , hasktorch-tools
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
+  default-language: Haskell2010
+
+executable MLPMain
+  main-is: MLPMain.hs
+  other-modules:
+      DataLoading
+      GenerateDatasetMLP
+      MLPRandomMain
+      Preprocess
+      Paths_Research
+  autogen-modules:
+      Paths_Research
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is MLPMain
+  build-depends:
+      Research
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , cassava
+    , containers
+    , hasktorch
+    , hasktorch-tools
+    , process
+    , random
+    , random-shuffle
+    , sqlite-simple
+    , text
+    , vector
+  default-language: Haskell2010
+
+executable MLPRandomMain
+  main-is: MLPRandomMain.hs
+  other-modules:
+      DataLoading
+      GenerateDatasetMLP
+      MLPMain
+      Preprocess
+      Paths_Research
+  autogen-modules:
+      Paths_Research
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is MLPRandomMain
+  build-depends:
+      Research
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , cassava
+    , containers
+    , hasktorch
+    , hasktorch-tools
+    , process
+    , random
+    , random-shuffle
+    , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 executable Preprocess
@@ -98,6 +178,8 @@ executable Preprocess
   other-modules:
       DataLoading
       GenerateDatasetMLP
+      MLPMain
+      MLPRandomMain
       Paths_Research
   autogen-modules:
       Paths_Research
@@ -109,11 +191,16 @@ executable Preprocess
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
+    , hasktorch-tools
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010
 
 test-suite Research-test
@@ -131,9 +218,14 @@ test-suite Research-test
     , aeson
     , base >=4.7 && <5
     , bytestring
+    , cassava
     , containers
+    , hasktorch
+    , hasktorch-tools
     , process
     , random
     , random-shuffle
     , sqlite-simple
+    , text
+    , vector
   default-language: Haskell2010

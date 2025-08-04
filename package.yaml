@@ -28,6 +28,11 @@ dependencies:
 - process
 - random
 - random-shuffle
+- vector
+- hasktorch
+- text
+- cassava
+- hasktorch-tools
 
 ghc-options:
 - -Wall
@@ -76,7 +81,28 @@ executables:
     - -main-is GenerateDatasetMLP
     dependencies:
     - Research
+  
+  MLPMain:
+    main:                MLPMain.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is MLPMain
+    dependencies:
+    - Research
 
+  MLPRandomMain:
+    main:                MLPRandomMain.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is MLPRandomMain
+    dependencies:
+    - Research
 
 tests:
   Research-test:
