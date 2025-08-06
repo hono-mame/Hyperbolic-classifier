@@ -41,6 +41,7 @@ library
     , base >=4.7 && <5
     , bytestring
     , containers
+    , hasktorch
     , hmatrix
     , process
     , random
@@ -68,6 +69,7 @@ executable DataLoading
     , base >=4.7 && <5
     , bytestring
     , containers
+    , hasktorch
     , hmatrix
     , process
     , random
@@ -95,6 +97,7 @@ executable GenerateDatasetMLP
     , base >=4.7 && <5
     , bytestring
     , containers
+    , hasktorch
     , hmatrix
     , process
     , random
@@ -122,6 +125,7 @@ executable Poincare
     , base >=4.7 && <5
     , bytestring
     , containers
+    , hasktorch
     , hmatrix
     , process
     , random
@@ -149,6 +153,7 @@ executable Preprocess
     , base >=4.7 && <5
     , bytestring
     , containers
+    , hasktorch
     , hmatrix
     , process
     , random
@@ -174,6 +179,7 @@ test-suite Research-test
     , base >=4.7 && <5
     , bytestring
     , containers
+    , hasktorch
     , hmatrix
     , process
     , random

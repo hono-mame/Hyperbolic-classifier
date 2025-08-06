@@ -11,6 +11,8 @@ import Data.List.Split (splitOn)
 import Numeric.LinearAlgebra (Vector, fromList, norm_2)
 import Control.Monad (replicateM, forM_)
 import Data.Maybe (fromJust)
+import Torch.Tensor (Tensor, asTensor,asValue)
+import Torch.Functional (sumAll, pow ,sqrt)
 
 type Entity = String
 type Embedding = Vector Double
@@ -57,6 +59,21 @@ distanceBetweenWords embeddings word1 word2 = do
   vec1 <- M.lookup word1 embeddings
   vec2 <- M.lookup word2 embeddings
   return $ poincareDistance vec1 vec2
+
+riemannianGradient :: Tensor -> Tensor -> Tensor
+riemannianGradient thetaT grad =
+  let normSquared = sumAll (thetaT * thetaT)
+      coeff = pow (2.0 :: Float) (asTensor (1.0 :: Float) - normSquared) / asTensor (4.0 :: Float)
+  in coeff * grad
+
+projectToBall :: Tensor -> Tensor
+projectToBall thetaT =
+  let norm = Torch.Functional.sqrt (sumAll (thetaT * thetaT))
+      normScalar = asValue norm :: Float
+      eps = 1e-5
+  in if normScalar > 1.0 && normScalar > eps
+        then thetaT / asTensor (normScalar - eps)
+        else thetaT
 
 main :: IO ()
 main = do

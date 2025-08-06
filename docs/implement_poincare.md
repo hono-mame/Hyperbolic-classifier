@@ -1,11 +1,19 @@
 # Implementation of `poincare.hs`
 
 ## TODO
+### Preprocessing
 - [x] Initialize embeddings  
 - [x] Output and verify initialized embedding values  
 - [x] Implement function that receives two words and returns the distance (in hyperbolic space)  
+
+### Training
 - [x] Understand the implementation of training in Python & the original paper's logic    
 → detail:[Poincare_training](/docs/Poincare_training.pdf)  
+- [x] Implement gradient conversion function (riemannianGradient)
+- [x] Implement projection function (projectToBall)
+
+### Others
+- [ ] Modify existing functions to use Tensor
 
 
 ## **Embedding Initialization**
@@ -43,3 +51,22 @@ Distance between "事業年度" and "勧誘": 3.4402425272197796e-3
 
 ### **Understand the training part**
 → detail:[Poincare_training](/docs/Poincare_training.pdf)  
+
+### **implement the training part**
+implemented two functions(will be needed during training):
+```haskell
+riemannianGradient :: Tensor -> Tensor -> Tensor
+riemannianGradient thetaT grad =
+  let normSquared = sumAll (thetaT * thetaT)
+      coeff = pow (2.0 :: Float) (asTensor (1.0 :: Float) - normSquared) / asTensor (4.0 :: Float)
+  in coeff * grad
+
+projectToBall :: Tensor -> Tensor
+projectToBall thetaT =
+  let norm = Torch.Functional.sqrt (sumAll (thetaT * thetaT))
+      normScalar = asValue norm :: Float
+      eps = 1e-5
+  in if normScalar > 1.0 && normScalar > eps
+        then thetaT / asTensor (normScalar - eps)
+        else thetaT
+```
