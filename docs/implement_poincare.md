@@ -11,6 +11,7 @@
 → detail:[Poincare_training](/docs/Poincare_training.pdf)  
 - [x] Implement gradient conversion function (riemannianGradient)
 - [x] Implement projection function (projectToBall)
+- [ ] implement RSGD version of runStep function (if possible)
 
 ### Others
 - [ ] Modify existing functions to use Tensor
