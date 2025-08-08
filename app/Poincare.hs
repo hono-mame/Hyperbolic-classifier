@@ -11,22 +11,26 @@ import Data.List.Split (splitOn)
 import Numeric.LinearAlgebra (Vector, fromList, norm_2)
 import Control.Monad (replicateM, forM_)
 import Data.Maybe (fromJust)
+import Prelude hiding (sqrt, acosh)
+
 import Torch.Tensor (Tensor, asTensor,asValue)
 import Torch.Functional (sumAll, pow ,sqrt)
+import Torch.TensorFactories (randnIO')
+import Torch.Functional.Internal (acosh)
 
 type Entity = String
-type Embedding = Vector Double
+type Embedding = Tensor
 type Embeddings = M.Map Entity Embedding
 
-randomVector :: Int -> IO (Vector Double)
-randomVector dim = do
-  let eps = 1e-3
-  vals <- replicateM dim (randomRIO (-eps, eps))
-  return $ fromList vals
+randomTensor :: Int -> IO Tensor
+randomTensor dim = do
+  t <- randnIO' [dim]
+  let eps = 1e-3 :: Double
+  return $ t * asTensor eps
 
 initializeEmbeddings :: Int -> [Entity] -> IO Embeddings
 initializeEmbeddings dim entities = do
-  vecs <- mapM (const $ randomVector dim) entities
+  vecs <- mapM (const $ randomTensor dim) entities
   return $ M.fromList (zip entities vecs)
 
 printEmbeddings :: Embeddings -> IO ()
@@ -44,21 +48,25 @@ readWordsFromCSV path = do
       wordsSet = S.fromList (concat pairs)
   return wordsSet
 
-poincareDistance :: Vector Double -> Vector Double -> Double
+poincareDistance :: Tensor -> Tensor -> Tensor
 poincareDistance u v =
-  let uNorm = norm_2 u
-      vNorm = norm_2 v
-      diffNorm = norm_2 (u - v)
-      num = 2 * diffNorm ** 2
-      denom = (1 - uNorm ** 2) * (1 - vNorm ** 2)
+  let uNorm = sqrt $ sumAll (u * u)
+      vNorm = sqrt $ sumAll (v * v)
+      diff = u - v
+      diffNorm = sqrt $ sumAll (diff * diff)
+      num = 2 * (diffNorm * diffNorm)
+      denom = (1 - uNorm * uNorm) * (1 - vNorm * vNorm)
       x = 1 + (num / denom)
-  in acosh x
+      vx = asValue x :: Float
+  in acosh (asTensor vx)
 
-distanceBetweenWords :: M.Map String (Vector Double) -> String -> String -> Maybe Double
+distanceBetweenWords :: Embeddings -> String -> String -> Maybe Double
 distanceBetweenWords embeddings word1 word2 = do
   vec1 <- M.lookup word1 embeddings
   vec2 <- M.lookup word2 embeddings
-  return $ poincareDistance vec1 vec2
+  let dTensor = poincareDistance vec1 vec2
+      distFloat = asValue dTensor :: Float
+  return $ realToFrac distFloat
 
 riemannianGradient :: Tensor -> Tensor -> Tensor
 riemannianGradient thetaT grad =

@@ -14,7 +14,7 @@
 - [ ] implement RSGD version of runStep function (if possible)
 
 ### Others
-- [ ] Modify existing functions to use Tensor
+- [x] Modify existing functions to use Tensor
 
 
 ## **Embedding Initialization**
