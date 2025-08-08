@@ -88,10 +88,12 @@ main = do
   let dim = 3
   wordSet <- readWordsFromCSV "data/MLP/train_small_test.csv"
   embeddings <- initializeEmbeddings dim (S.toList wordSet)
-  -- test
+
   printEmbeddings embeddings
-  let word1 = "事業年度"
-      word2 = "勧誘"
-  case distanceBetweenWords embeddings word1 word2 of
-      Just d -> putStrLn $ "Distance between \"" ++ word1 ++ "\" and \"" ++ word2 ++ "\": " ++ show d
-      Nothing -> putStrLn "One or both words not found."
+  -- let word1 = "事業年度"
+  --     word2 = "勧誘"
+  -- case distanceBetweenWords embeddings word1 word2 of
+  --     Just d -> putStrLn $ "Distance between \"" ++ word1 ++ "\" and \"" ++ word2 ++ "\": " ++ show d
+  --     Nothing -> putStrLn "One or both words not found."
+
+  -- training --
