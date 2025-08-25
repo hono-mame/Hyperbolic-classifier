@@ -8,8 +8,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Vector as V
 import Data.List.Split (splitOn)
-import Numeric.LinearAlgebra (Vector, fromList, norm_2)
-import Control.Monad (replicateM, forM_)
+import Control.Monad (foldM)
 import Data.Maybe (fromJust)
 import Prelude hiding (sqrt, acosh)
 
@@ -83,12 +82,37 @@ projectToBall thetaT =
         then thetaT / asTensor (normScalar - eps)
         else thetaT
 
+-- dummy loss function (implement this later)
+lossFunction :: Embeddings -> Tensor
+lossFunction embs =
+  let allVecs = M.elems embs
+  in sumAll $ foldl1 (+) (map (\v -> v * v) allVecs)
+
+updateEmbedding :: Embedding -> Embedding
+updateEmbedding emb = emb
+
+runStepRSGD :: Embeddings -> Embeddings
+runStepRSGD = M.map updateEmbedding
+
+train :: Int -> Embeddings -> IO Embeddings
+train epochs embs0 =
+  foldM step embs0 [1..epochs]
+  where
+    step embs epoch = do
+      let loss = lossFunction embs
+          lossVal = asValue loss :: Float
+      putStrLn $ "Epoch " ++ show epoch ++ " | Loss = " ++ show lossVal
+      let newEmbs = runStepRSGD embs
+      return newEmbs
+
 main :: IO ()
 main = do
   let dim = 3
-  wordSet <- readWordsFromCSV "data/MLP/train_small_test.csv"
+      epoch = 10
+  wordSet <- readWordsFromCSV "data/Hyperbolic/input_test.csv"
   embeddings <- initializeEmbeddings dim (S.toList wordSet)
 
+  putStrLn "Initial embeddings:"
   printEmbeddings embeddings
   -- let word1 = "事業年度"
   --     word2 = "勧誘"
@@ -97,3 +121,7 @@ main = do
   --     Nothing -> putStrLn "One or both words not found."
 
   -- training --
+  putStrLn "Start training..."
+  trained <- train epoch embeddings
+  putStrLn "Training finished."
+  printEmbeddings trained

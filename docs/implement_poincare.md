@@ -6,18 +6,26 @@
 - [x] Output and verify initialized embedding values  
 - [x] Implement function that receives two words and returns the distance (in hyperbolic space)  
 
+### data preparation
+- [x] Change the input format
+  (hyper, hypo, label) -> (hyper, hypo) 
+  do negative sampling within the training loop.
+- [ ] Write a script to prepare input data specifically for Hyperbolic Embedding
+
 ### Training
 - [x] Understand the implementation of training in Python & the original paper's logic    
 → detail:[Poincare_training](/docs/Poincare_training.pdf)  
 - [x] Implement gradient conversion function (riemannianGradient)
 - [x] Implement projection function (projectToBall)
+- [x] Create a template for the training loop (with some dummy functions)
+  Placeholder for loss calculation and parameter updates
 - [ ] implement RSGD version of runStep function (if possible)
 
 ### Others
 - [x] Modify existing functions to use Tensor
 
 
-## **Embedding Initialization**
+### **Embedding Initialization**
 Initialize the vector for each word with random values between -0.001 and 0.001.
 ```python
 def __init__(self, train_data, size=50, alpha=0.1, negative=10, workers=1, epsilon=1e-5, regularization_coeff=1.0,
@@ -70,4 +78,37 @@ projectToBall thetaT =
   in if normScalar > 1.0 && normScalar > eps
         then thetaT / asTensor (normScalar - eps)
         else thetaT
+```
+
+
+### **Create a template for the training loop**
+after finish implementhing the trainig part, the value of losses should become smaller.
+```haskell
+Initial embeddings:
+---------- print first 10 vectors of each word ----------
+善: Tensor Float [3] [ 3.1243e-4, -2.9358e-4,  5.1586e-4]
+恭敬: Tensor Float [3] [-6.7423e-4, -1.1448e-3, -2.7294e-4]
+持ち上る: Tensor Float [3] [-5.9734e-4,  1.5078e-3, -1.5180e-3]
+温かさ: Tensor Float [3] [ 2.1758e-5,  5.1795e-4, -9.1720e-4]
+行なわれる: Tensor Float [3] [ 7.7263e-4,  1.4837e-3, -1.0696e-3]
+防止: Tensor Float [3] [ 3.8586e-5, -6.1635e-4, -1.6448e-3]
+Start training...
+Epoch 1 | Loss = 1.5363246e-5
+Epoch 2 | Loss = 1.5363246e-5
+Epoch 3 | Loss = 1.5363246e-5
+Epoch 4 | Loss = 1.5363246e-5
+Epoch 5 | Loss = 1.5363246e-5
+Epoch 6 | Loss = 1.5363246e-5
+Epoch 7 | Loss = 1.5363246e-5
+Epoch 8 | Loss = 1.5363246e-5
+Epoch 9 | Loss = 1.5363246e-5
+Epoch 10 | Loss = 1.5363246e-5
+Training finished.
+---------- print first 10 vectors of each word ----------
+善: Tensor Float [3] [ 3.1243e-4, -2.9358e-4,  5.1586e-4]
+恭敬: Tensor Float [3] [-6.7423e-4, -1.1448e-3, -2.7294e-4]
+持ち上る: Tensor Float [3] [-5.9734e-4,  1.5078e-3, -1.5180e-3]
+温かさ: Tensor Float [3] [ 2.1758e-5,  5.1795e-4, -9.1720e-4]
+行なわれる: Tensor Float [3] [ 7.7263e-4,  1.4837e-3, -1.0696e-3]
+防止: Tensor Float [3] [ 3.8586e-5, -6.1635e-4, -1.6448e-3]
 ```
