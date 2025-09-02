@@ -10,7 +10,8 @@
 - [x] Change the input format
   (hyper, hypo, label) -> (hyper, hypo) 
   do negative sampling within the training loop.
-- [ ] Write a script to prepare input data specifically for Hyperbolic Embedding
+- [x] Write a script to prepare input data specifically for Hyperbolic Embedding
+- [x] generate negative samples for each positive sample
 
 ### Training
 - [x] Understand the implementation of training in Python & the original paper's logic    
@@ -19,7 +20,7 @@
 - [x] Implement projection function (projectToBall)
 - [x] Create a template for the training loop (with some dummy functions)
   Placeholder for loss calculation and parameter updates
-- [ ] implement RSGD version of runStep function (if possible)
+- [x] implement RSGD version of runStep function (if possible)
 
 ### Others
 - [x] Modify existing functions to use Tensor
@@ -112,3 +113,89 @@ Training finished.
 行なわれる: Tensor Float [3] [ 7.7263e-4,  1.4837e-3, -1.0696e-3]
 防止: Tensor Float [3] [ 3.8586e-5, -6.1635e-4, -1.6448e-3]
 ```
+
+### **Finished implementing the training part**
+result(with small test data, dummy relationships)
+``` haskell
+Initial embeddings:
+---------- print first 10 vectors of each word ----------
+A: Tensor Float [3] [-2.0117e-4,  1.9466e-3,  8.7405e-4]
+B: Tensor Float [3] [-2.5283e-4, -4.1555e-4,  8.2789e-4]
+C: Tensor Float [3] [-4.5273e-4, -1.3752e-3, -2.5581e-4]
+D: Tensor Float [3] [-4.2155e-4,  2.7575e-7,  1.0969e-3]
+E: Tensor Float [3] [ 1.1763e-3,  4.6135e-4, -9.8919e-4]
+F: Tensor Float [3] [ 9.0901e-4, -2.0377e-5,  1.2742e-3]
+M: Tensor Float [3] [-8.1056e-4,  8.2273e-4, -1.7868e-3]
+N: Tensor Float [3] [ 4.8089e-5, -1.0440e-3, -4.9018e-4]
+X: Tensor Float [3] [ 1.5222e-3, -1.1042e-3, -2.1042e-4]
+Y: Tensor Float [3] [ 1.1548e-3, -8.6157e-5,  1.2959e-3]
+Start training...
+Epoch 10  lr=9.999999e-4  Loss=35.32387
+Epoch 20  lr=1.0e-2  Loss=33.438755
+Epoch 30  lr=1.0e-2  Loss=31.608467
+Epoch 40  lr=1.0e-2  Loss=30.038973
+Epoch 50  lr=1.0e-2  Loss=28.45166
+Epoch 60  lr=1.0e-2  Loss=27.082933
+Epoch 70  lr=1.0e-2  Loss=25.727005
+Epoch 80  lr=1.0e-2  Loss=24.496433
+Epoch 90  lr=1.0e-2  Loss=23.360289
+Epoch 100  lr=1.0e-2  Loss=22.336319
+Epoch 110  lr=1.0e-2  Loss=21.357977
+Epoch 120  lr=1.0e-2  Loss=20.44184
+Epoch 130  lr=1.0e-2  Loss=19.597368
+Epoch 140  lr=1.0e-2  Loss=18.871922
+Epoch 150  lr=1.0e-2  Loss=18.165676
+Epoch 160  lr=1.0e-2  Loss=17.447916
+Epoch 170  lr=1.0e-2  Loss=16.82014
+Epoch 180  lr=1.0e-2  Loss=16.312077
+Epoch 190  lr=1.0e-2  Loss=15.861533
+Epoch 200  lr=1.0e-2  Loss=15.361312
+Epoch 210  lr=1.0e-2  Loss=14.915988
+Epoch 220  lr=1.0e-2  Loss=14.517198
+Epoch 230  lr=1.0e-2  Loss=14.151439
+Epoch 240  lr=1.0e-2  Loss=13.811441
+Epoch 250  lr=1.0e-2  Loss=13.462194
+Epoch 260  lr=1.0e-2  Loss=13.17724
+Epoch 270  lr=1.0e-2  Loss=12.871571
+Epoch 280  lr=1.0e-2  Loss=12.636831
+Epoch 290  lr=1.0e-2  Loss=12.405084
+Epoch 300  lr=1.0e-2  Loss=12.191023
+Epoch 310  lr=1.0e-2  Loss=11.987133
+Epoch 320  lr=1.0e-2  Loss=11.805191
+Epoch 330  lr=1.0e-2  Loss=11.616636
+Epoch 340  lr=1.0e-2  Loss=11.44525
+Epoch 350  lr=1.0e-2  Loss=11.243036
+Epoch 360  lr=1.0e-2  Loss=11.095315
+Epoch 370  lr=1.0e-2  Loss=10.980642
+Epoch 380  lr=1.0e-2  Loss=10.813464
+Epoch 390  lr=1.0e-2  Loss=10.691256
+Epoch 400  lr=1.0e-2  Loss=10.577953
+Epoch 410  lr=1.0e-2  Loss=10.462139
+Epoch 420  lr=1.0e-2  Loss=10.34776
+Epoch 430  lr=1.0e-2  Loss=10.205788
+Epoch 440  lr=1.0e-2  Loss=10.102495
+Epoch 450  lr=1.0e-2  Loss=9.976488
+Epoch 460  lr=1.0e-2  Loss=9.900166
+Epoch 470  lr=1.0e-2  Loss=9.829764
+Epoch 480  lr=1.0e-2  Loss=9.733345
+Epoch 490  lr=1.0e-2  Loss=9.655635
+Epoch 500  lr=1.0e-2  Loss=9.575263
+Training finished.
+---------- print first 10 vectors of each word ----------
+A: Tensor Float [3] [ 0.1282   ,  0.7271   ,  0.3606   ]
+B: Tensor Float [3] [ 0.1288   ,  0.7208   ,  0.3561   ]
+C: Tensor Float [3] [ 0.1362   ,  0.6712   ,  0.3185   ]
+D: Tensor Float [3] [ 0.1563   ,  0.5884   ,  0.2508   ]
+E: Tensor Float [3] [ 0.1606   ,  0.5731   ,  0.2379   ]
+F: Tensor Float [3] [ 0.1604   ,  0.5726   ,  0.2380   ]
+M: Tensor Float [3] [ 0.6526   , -0.1064   , -0.2166   ]
+N: Tensor Float [3] [ 0.6526   , -0.1065   , -0.2167   ]
+X: Tensor Float [3] [ 0.7478   , -0.1334   , -0.2484   ]
+Y: Tensor Float [3] [ 0.7451   , -0.1327   , -0.2476   ]
+```
+
+NEXT: Try with larger data!!
+
+
+### **data preprocessing for Hyperbolic Embedding**
+→ [GenerateDatasetHyperbolic.hs](/app/GenerateDatasetHyperbolic.hs)
