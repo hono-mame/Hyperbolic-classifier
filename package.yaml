@@ -81,6 +81,17 @@ executables:
     dependencies:
     - Research
 
+  GenerateDatasetHyperbolic:
+    main:                GenerateDatasetHyperbolic.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is GenerateDatasetHyperbolic
+    dependencies:
+    - Research
+
   Poincare:
     main:                Poincare.hs
     source-dirs:         app

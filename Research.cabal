@@ -54,6 +54,7 @@ library
 executable DataLoading
   main-is: DataLoading.hs
   other-modules:
+      GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Poincare
       Preprocess
@@ -79,10 +80,40 @@ executable DataLoading
     , vector
   default-language: Haskell2010
 
+executable GenerateDatasetHyperbolic
+  main-is: GenerateDatasetHyperbolic.hs
+  other-modules:
+      DataLoading
+      GenerateDatasetMLP
+      Poincare
+      Preprocess
+      Paths_Research
+  autogen-modules:
+      Paths_Research
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is GenerateDatasetHyperbolic
+  build-depends:
+      Research
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , hasktorch
+    , hmatrix
+    , process
+    , random
+    , random-shuffle
+    , split
+    , sqlite-simple
+    , vector
+  default-language: Haskell2010
+
 executable GenerateDatasetMLP
   main-is: GenerateDatasetMLP.hs
   other-modules:
       DataLoading
+      GenerateDatasetHyperbolic
       Poincare
       Preprocess
       Paths_Research
@@ -111,6 +142,7 @@ executable Poincare
   main-is: Poincare.hs
   other-modules:
       DataLoading
+      GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Preprocess
       Paths_Research
@@ -139,6 +171,7 @@ executable Preprocess
   main-is: Preprocess.hs
   other-modules:
       DataLoading
+      GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Poincare
       Paths_Research
