@@ -221,6 +221,20 @@ computeDatasetLoss embs pairs negK = do
           lossVal = asValue lossTensor :: Float
       return lossVal
 
+saveEmbeddings :: FilePath -> Embeddings -> IO ()
+saveEmbeddings path embs = do
+  let dimNum = case M.elems embs of
+                  (v:_) -> head (shape v)
+                  []    -> 0
+      header = "word," ++ concat (map (\i -> "dim" ++ show i ++ if i == dimNum then "" else ",") [1..dimNum])
+      linesText = map (\(word, vec) -> 
+                        let vecList :: [Float]
+                            vecList = asValue vec
+                        in word ++ "," ++ concat (map (\(x,i) -> show x ++ if i == dimNum then "" else ",") (zip vecList [1..]))
+                      ) $ M.toList embs
+      csvText = unlines (header : linesText)
+  writeFile path csvText
+
 main :: IO ()
 main = do
   let dim = 3
@@ -249,3 +263,4 @@ main = do
   printEmbeddings trained
 
   drawLearningCurve "charts/poincare_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]
+  saveEmbeddings "outputs/poincare_embeddings.csv" trained
