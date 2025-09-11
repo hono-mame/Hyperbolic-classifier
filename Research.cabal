@@ -43,6 +43,7 @@ library
     , containers
     , hasktorch
     , hmatrix
+    , nlp-tools
     , process
     , random
     , random-shuffle
@@ -72,6 +73,7 @@ executable DataLoading
     , containers
     , hasktorch
     , hmatrix
+    , nlp-tools
     , process
     , random
     , random-shuffle
@@ -101,6 +103,7 @@ executable GenerateDatasetHyperbolic
     , containers
     , hasktorch
     , hmatrix
+    , nlp-tools
     , process
     , random
     , random-shuffle
@@ -130,6 +133,7 @@ executable GenerateDatasetMLP
     , containers
     , hasktorch
     , hmatrix
+    , nlp-tools
     , process
     , random
     , random-shuffle
@@ -159,6 +163,7 @@ executable Poincare
     , containers
     , hasktorch
     , hmatrix
+    , nlp-tools
     , process
     , random
     , random-shuffle
@@ -188,6 +193,7 @@ executable Preprocess
     , containers
     , hasktorch
     , hmatrix
+    , nlp-tools
     , process
     , random
     , random-shuffle
@@ -214,6 +220,7 @@ test-suite Research-test
     , containers
     , hasktorch
     , hmatrix
+    , nlp-tools
     , process
     , random
     , random-shuffle

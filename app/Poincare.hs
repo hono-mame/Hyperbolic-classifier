@@ -20,6 +20,7 @@ import Torch.Optim (Gradients (..), grad', Loss)
 import Torch.Device (Device (..), DeviceType (..))
 import Torch.Autograd (makeIndependent, toDependent)
 import Torch.DType (DType (..))
+import ML.Exp.Chart (drawLearningCurve)
 
 type Entity = String
 type Embedding = Tensor
@@ -180,17 +181,17 @@ train :: Int      -- epochs
       -> Int      -- burn-in epochs
       -> [(String,String)] -- input pairs
       -> Embeddings -- initial embeddings
-      -> IO Embeddings -- trained embeddings
+      -> IO (Embeddings, [Float]) -- trained embeddings + loss history
 train epochs baseLR negK burnC burnEpochs pairs embs0 =
-  foldM step embs0 [1..epochs]
+  foldM step (embs0, []) [1..epochs]
   where
-    step embs epoch = do
+    step (embs, losses) epoch = do
       let lr = if epoch <= burnEpochs then baseLR / fromIntegral burnC else baseLR
       newEmbs <- runStepRSGD lr negK pairs embs
       lossVal <- computeDatasetLoss newEmbs pairs negK
-      when (epoch `mod` 10 == 0) $ do
+      when (epoch `mod` 1 == 0) $
         putStrLn $ "Epoch " ++ show epoch ++ "  lr=" ++ show lr ++ "  Loss=" ++ show lossVal
-      return newEmbs
+      return (newEmbs, losses ++ [lossVal])
 
 computeDatasetLoss :: Embeddings 
                   -> [(String,String)]
@@ -228,7 +229,7 @@ main = do
       negK = 4
       burnC = 10
       burnEpochs = 10
-      csvPath = "data/Hyperbolic/train_sample.csv"
+      csvPath = "data/Hyperbolic/hypernym_relations_jpn_nouns_head_100.csv"
 
   pairs <- readPairsFromCSV csvPath
   wordSet <- readWordsFromCSV csvPath
@@ -243,6 +244,8 @@ main = do
   --     Nothing -> putStrLn "One or both words not found."
 
   putStrLn "Start training..."
-  trained <- train epochs baseLR negK burnC burnEpochs pairs embeddings
+  (trained, lossHistory) <- train epochs baseLR negK burnC burnEpochs pairs embeddings
   putStrLn "Training finished."
   printEmbeddings trained
+
+  drawLearningCurve "charts/poincare_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]

@@ -32,6 +32,7 @@ dependencies:
 - hmatrix
 - split
 - hasktorch
+- nlp-tools
 
 ghc-options:
 - -Wall
