@@ -58,6 +58,7 @@ executable DataLoading
       GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Poincare
+      PoincareBatch
       Preprocess
       Paths_Research
   autogen-modules:
@@ -88,6 +89,7 @@ executable GenerateDatasetHyperbolic
       DataLoading
       GenerateDatasetMLP
       Poincare
+      PoincareBatch
       Preprocess
       Paths_Research
   autogen-modules:
@@ -118,6 +120,7 @@ executable GenerateDatasetMLP
       DataLoading
       GenerateDatasetHyperbolic
       Poincare
+      PoincareBatch
       Preprocess
       Paths_Research
   autogen-modules:
@@ -148,6 +151,7 @@ executable Poincare
       DataLoading
       GenerateDatasetHyperbolic
       GenerateDatasetMLP
+      PoincareBatch
       Preprocess
       Paths_Research
   autogen-modules:
@@ -172,6 +176,37 @@ executable Poincare
     , vector
   default-language: Haskell2010
 
+executable PoincareBatch
+  main-is: PoincareBatch.hs
+  other-modules:
+      DataLoading
+      GenerateDatasetHyperbolic
+      GenerateDatasetMLP
+      Poincare
+      Preprocess
+      Paths_Research
+  autogen-modules:
+      Paths_Research
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is PoincareBatch
+  build-depends:
+      Research
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , hasktorch
+    , hmatrix
+    , nlp-tools
+    , process
+    , random
+    , random-shuffle
+    , split
+    , sqlite-simple
+    , vector
+  default-language: Haskell2010
+
 executable Preprocess
   main-is: Preprocess.hs
   other-modules:
@@ -179,6 +214,7 @@ executable Preprocess
       GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Poincare
+      PoincareBatch
       Paths_Research
   autogen-modules:
       Paths_Research
