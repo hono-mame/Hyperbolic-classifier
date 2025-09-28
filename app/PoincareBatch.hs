@@ -1,28 +1,29 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Poincare (main) where
+module PoincareBatch (main) where
 
 import qualified Data.Set as S
 import Torch.Tensor()
 import ML.Exp.Chart (drawLearningCurve)
 
-import PoincareUtils
-    (initializeEmbeddings, 
+import PoincareUtils(
+    initializeEmbeddings, 
     printEmbeddings, 
     readWordsFromCSV, 
     readPairsFromCSV,
-    train, 
+    trainBatch,
     saveEmbeddings)
 
 main :: IO ()
 main = do
   let dim = 3
-      epochs = 500
+      epochs = 200
       baseLR = 0.01
       negK = 4
       burnC = 10
       burnEpochs = 10
-      csvPath = "data/Hyperbolic/hypernym_relations_jpn_nouns_head_100.csv"
+      batchSize = 512
+      csvPath = "data/Hyperbolic/hypernym_relations_jpn_nouns_head_1000.csv"
 
   pairs <- readPairsFromCSV csvPath
   wordSet <- readWordsFromCSV csvPath
@@ -37,9 +38,9 @@ main = do
   --     Nothing -> putStrLn "One or both words not found."
 
   putStrLn "Start training..."
-  (trained, lossHistory) <- train epochs baseLR negK burnC burnEpochs pairs embeddings
+  (trained, lossHistory) <- trainBatch epochs baseLR negK burnC burnEpochs batchSize pairs embeddings
   putStrLn "Training finished."
   printEmbeddings trained
 
-  drawLearningCurve "charts/poincare_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]
+  drawLearningCurve "charts/poincareBatch_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]
   saveEmbeddings "outputs/poincare_embeddings.csv" trained

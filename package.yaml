@@ -32,6 +32,7 @@ dependencies:
 - hmatrix
 - split
 - hasktorch
+- nlp-tools
 
 ghc-options:
 - -Wall
@@ -100,6 +101,17 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -main-is Poincare
+    dependencies:
+    - Research
+
+  PoincareBatch:
+    main:                PoincareBatch.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -main-is PoincareBatch
     dependencies:
     - Research
 
