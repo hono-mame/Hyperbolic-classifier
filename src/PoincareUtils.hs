@@ -2,6 +2,7 @@ module PoincareUtils
     (initializeEmbeddings, printEmbeddings, readWordsFromCSV, readPairsFromCSV,
      poincareDistance, distanceBetweenWords, projectToBall,
      runStepRSGD, train, computeDatasetLoss, saveEmbeddings,
+     makeBatches, sampleNegatives, runStepRSGDBatch, pairLossTensor, trainBatch,
      Entity, Embedding, Embeddings
     ) where
 
@@ -47,6 +48,12 @@ printEmbeddings embs = do
   mapM_ printOne (take 10 $ M.toList embs)
   where
     printOne (ent, vec) = putStrLn $ ent ++ ": " ++ show vec
+
+makeBatches :: Int -> [a] -> [[a]]
+makeBatches batchSize [] = []
+makeBatches batchSize xs =
+  let (batch, rest) = splitAt batchSize xs
+  in batch : makeBatches batchSize rest
 
 readWordsFromCSV :: FilePath -> IO (S.Set String)
 readWordsFromCSV path = do
@@ -178,6 +185,67 @@ runStepRSGD learningRate negK pairs embeddings = do
           return $ M.fromList updatedResults
         [] -> error "Empty gradient list"
 
+
+runStepRSGDBatch :: Float-- learningRate
+                   -> Int -- negK
+                  -> [[(String,String)]] -- batched pairs
+                  -> Embeddings -- initial embeddings
+                  -> IO Embeddings -- updated embeddings
+runStepRSGDBatch learningRate negK batches embeddings =
+  foldM updateBatch embeddings batches
+  where
+    updateBatch embs batch = do
+      let embList = M.toList embs
+          idxMap = M.fromList $ zip (map fst embList) [0..]
+          stacked = stack (Dim 0) (map snd embList)
+      independentStacked <- makeIndependent stacked
+      let depStacked = toDependent independentStacked
+
+      -- バッチ内の全ペアの損失を足す
+      lossTensors <- mapM (pairLossTensor depStacked idxMap negK) batch
+      let totalLoss = sumAll (stack (Dim 0) lossTensors)
+
+      -- 勾配計算
+      let Gradients grads = grad' totalLoss [independentStacked]
+
+      case grads of
+        (gradTensor : _) -> do
+          updatedResults <- mapM (\(word, vec) -> do
+              let i = fromJust $ M.lookup word idxMap
+                  gVec = select 0 (fromIntegral i) gradTensor
+                  depVec = select 0 (fromIntegral i) depStacked
+                  normSquared = sumAll (depVec * depVec)
+                  tmp = 1.0 - asValue normSquared :: Float
+                  coeff = (asTensor tmp * asTensor tmp) / asTensor (4.0 :: Float)
+                  riemGrad = coeff * gVec
+                  lrTensor = asTensor learningRate
+                  updated = vec - lrTensor * riemGrad
+                  projected = projectToBall updated
+              return (word, projected)
+            ) embList
+          return $ M.fromList updatedResults
+        [] -> error "Empty gradient list"
+
+pairLossTensor :: Tensor                        -- stacked embeddings
+                -> M.Map String Int              -- 単語→インデックスのマップ
+                -> Int                           -- negK
+                -> (String, String)              -- (u,v)
+                -> IO Tensor                     -- 損失テンソル
+pairLossTensor depStacked idxMap negK (u,v) = do
+  let idxU = fromJust $ M.lookup u idxMap
+      idxV = fromJust $ M.lookup v idxMap
+      n = shape depStacked !! 0
+  negIdxs <- sampleNegatives n negK (fromIntegral idxV)
+  let candIdxs = (fromIntegral idxV) : map fromIntegral negIdxs
+      vecU = select 0 idxU depStacked
+      vecCandidates = map (\i -> select 0 i depStacked) candIdxs
+      dists = map (poincareDistance vecU) vecCandidates
+      negDists = map (\dt -> exp (asTensor (0.0 :: Float) - dt)) dists
+      sumExp = sumAll (stack (Dim 0) negDists)
+      dPos = head dists
+  return $ dPos + log sumExp
+
+
 train :: Int      -- epochs
       -> Float    -- base learning rate η
       -> Int      -- neg samples per positive k
@@ -192,6 +260,27 @@ train epochs baseLR negK burnC burnEpochs pairs embs0 =
     step (embs, losses) epoch = do
       let lr = if epoch <= burnEpochs then baseLR / fromIntegral burnC else baseLR
       newEmbs <- runStepRSGD lr negK pairs embs
+      lossVal <- computeDatasetLoss newEmbs pairs negK
+      when (epoch `mod` 1 == 0) $
+        putStrLn $ "Epoch " ++ show epoch ++ "  lr=" ++ show lr ++ "  Loss=" ++ show lossVal
+      return (newEmbs, losses ++ [lossVal])
+
+trainBatch :: Int      -- epochs
+      -> Float    -- base learning rate η
+      -> Int      -- neg samples per positive k
+      -> Int      -- burn-in coefficient c (use η/c during burn-in)
+      -> Int      -- burn-in epochs
+      -> Int      -- batch size
+      -> [(String,String)] -- input pairs
+      -> Embeddings -- initial embeddings
+      -> IO (Embeddings, [Float]) -- trained embeddings + loss history
+trainBatch epochs baseLR negK burnC burnEpochs batchSize pairs embs0 =
+  foldM step (embs0, []) [1..epochs]
+  where
+    step (embs, losses) epoch = do
+      let lr = if epoch <= burnEpochs then baseLR / fromIntegral burnC else baseLR
+          batches = makeBatches batchSize pairs
+      newEmbs <- runStepRSGDBatch lr negK batches embs
       lossVal <- computeDatasetLoss newEmbs pairs negK
       when (epoch `mod` 1 == 0) $
         putStrLn $ "Epoch " ++ show epoch ++ "  lr=" ++ show lr ++ "  Loss=" ++ show lossVal
