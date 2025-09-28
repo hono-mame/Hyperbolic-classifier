@@ -14,18 +14,15 @@ import Data.List.Split (splitOn)
 import Control.Monad (foldM, when)
 import Data.Maybe (fromJust)
 import Prelude hiding (sqrt, acosh, exp, log)
-import Data.Int (Int64)
-
-import Torch.Tensor (Tensor, asTensor, asValue, toDevice, toType, select, shape)
-import Torch.Functional (sumAll, pow, sqrt, Dim (..), stack, exp, log, max)
+import Data.Int()
+import Torch.Tensor (Tensor, asTensor, asValue, select, shape)
+import Torch.Functional (sumAll, sqrt, Dim (..), stack, exp, log)
 import Torch.TensorFactories (randnIO')
 import Torch.Functional.Internal (acosh)
-import Torch.Optim (Gradients (..), grad', Loss)
-import Torch.Device (Device (..), DeviceType (..))
+import Torch.Optim (Gradients (..), grad')
+import Torch.Device()
 import Torch.Autograd (makeIndependent, toDependent)
-import Torch.DType (DType (..))
-import ML.Exp.Chart (drawLearningCurve)
-
+import Torch.DType()
 
 type Entity = String
 type Embedding = Tensor
@@ -118,8 +115,6 @@ sampleNegatives vocab k excludeIdx = go k []
         then go n acc
         else go (n - 1) (idx : acc)
 
--- 1ステップ分のRiemannian SGDを実行する関数
--- 各ペア(u,v)について損失を計算し、勾配を求め、埋め込みベクトルを更新する
 runStepRSGD :: Float -- learningRate
             -> Int -- negK
             -> [(String,String)] -- pairs
@@ -142,8 +137,8 @@ runStepRSGD learningRate negK pairs embeddings = do
       let depStacked = toDependent independentStacked
       
       -- u, vのインデックスを取得
-      let idxU = fromIntegral $ fromJust $ M.lookup u idxMap
-          idxV = fromIntegral $ fromJust $ M.lookup v idxMap
+      let idxU = fromJust $ M.lookup u idxMap
+          idxV = fromJust $ M.lookup v idxMap
       -- putStrLn $ "----------------------------------------"
       -- putStrLn $ "Processing pair: (" ++ show idxU ++ ", " ++ show idxV ++ ")"
       -- putStrLn $ "pair: (" ++ u ++ ", " ++ v ++ ")"
@@ -171,8 +166,8 @@ runStepRSGD learningRate negK pairs embeddings = do
         (gradTensor : _) -> do
           updatedResults <- mapM (\(word, vec) -> do
             let i = fromJust $ M.lookup word idxMap
-                gVec = select 0 (fromIntegral i) gradTensor
-                depVec = select 0 (fromIntegral i) depStacked
+                gVec = select 0 i gradTensor
+                depVec = select 0 i depStacked
                 normSquared = sumAll (depVec * depVec)
                 tmp = 1.0 - asValue normSquared :: Float
                 coeff = (asTensor tmp * asTensor tmp) / asTensor (4.0 :: Float)
@@ -184,7 +179,6 @@ runStepRSGD learningRate negK pairs embeddings = do
             ) embList
           return $ M.fromList updatedResults
         [] -> error "Empty gradient list"
-
 
 runStepRSGDBatch :: Float-- learningRate
                    -> Int -- negK
@@ -212,8 +206,8 @@ runStepRSGDBatch learningRate negK batches embeddings =
         (gradTensor : _) -> do
           updatedResults <- mapM (\(word, vec) -> do
               let i = fromJust $ M.lookup word idxMap
-                  gVec = select 0 (fromIntegral i) gradTensor
-                  depVec = select 0 (fromIntegral i) depStacked
+                  gVec = select 0 i gradTensor
+                  depVec = select 0 i depStacked
                   normSquared = sumAll (depVec * depVec)
                   tmp = 1.0 - asValue normSquared :: Float
                   coeff = (asTensor tmp * asTensor tmp) / asTensor (4.0 :: Float)
@@ -244,7 +238,6 @@ pairLossTensor depStacked idxMap negK (u,v) = do
       sumExp = sumAll (stack (Dim 0) negDists)
       dPos = head dists
   return $ dPos + log sumExp
-
 
 train :: Int      -- epochs
       -> Float    -- base learning rate η

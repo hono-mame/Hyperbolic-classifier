@@ -2,34 +2,17 @@
 
 module PoincareBatch (main) where
 
-import System.Random
-import System.IO
-import qualified Data.Map as M
 import qualified Data.Set as S
-import Data.List.Split (splitOn)
-import Control.Monad (foldM, when)
-import Data.Maybe (fromJust)
-import Prelude hiding (sqrt, acosh, exp, log)
-import Data.Int (Int64)
-
-import Torch.Tensor (Tensor, asTensor, asValue, toDevice, toType, select, shape)
-import Torch.Functional (sumAll, pow, sqrt, Dim (..), stack, exp, log, max)
-import Torch.TensorFactories (randnIO')
-import Torch.Functional.Internal (acosh)
-import Torch.Optim (Gradients (..), grad', Loss)
-import Torch.Device (Device (..), DeviceType (..))
-import Torch.Autograd (makeIndependent, toDependent)
-import Torch.DType (DType (..))
+import Torch.Tensor()
 import ML.Exp.Chart (drawLearningCurve)
 
 import PoincareUtils(
-    makeBatches, initializeEmbeddings, printEmbeddings, readWordsFromCSV, readPairsFromCSV,
-    poincareDistance, projectToBall, sampleNegatives, runStepRSGDBatch, pairLossTensor, trainBatch,
-    computeDatasetLoss, saveEmbeddings)
-
-type Entity = String
-type Embedding = Tensor
-type Embeddings = M.Map Entity Embedding
+    initializeEmbeddings, 
+    printEmbeddings, 
+    readWordsFromCSV, 
+    readPairsFromCSV,
+    trainBatch,
+    saveEmbeddings)
 
 main :: IO ()
 main = do
