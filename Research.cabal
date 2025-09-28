@@ -28,6 +28,7 @@ library
       DBAccess
       FileExport
       MLPDataGenerateUtils
+      PoincareUtils
       TreeUtils
   other-modules:
       Paths_Research
