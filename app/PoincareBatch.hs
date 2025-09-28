@@ -26,6 +26,12 @@ type Entity = String
 type Embedding = Tensor
 type Embeddings = M.Map Entity Embedding
 
+makeBatches :: Int -> [a] -> [[a]]
+makeBatches batchSize [] = []
+makeBatches batchSize xs =
+  let (batch, rest) = splitAt batchSize xs
+  in batch : makeBatches batchSize rest
+
 randomTensor :: Int -> IO Tensor
 randomTensor dim = do
   t <- randnIO' [dim]
@@ -107,87 +113,82 @@ sampleNegatives vocab k excludeIdx = go k []
         then go n acc
         else go (n - 1) (idx : acc)
 
--- 1ステップ分のRiemannian SGDを実行する関数
--- 各ペア(u,v)について損失を計算し、勾配を求め、埋め込みベクトルを更新する
-runStepRSGD :: Float -- learningRate
-            -> Int -- negK
-            -> [(String,String)] -- pairs
-            -> Embeddings
-            -> IO Embeddings
-runStepRSGD learningRate negK pairs embeddings = do
-  foldM updateOne embeddings pairs
+runStepRSGDBatch :: Float-- learningRate
+                   -> Int -- negK
+                  -> [[(String,String)]] -- batched pairs
+                  -> Embeddings -- initial embeddings
+                  -> IO Embeddings -- updated embeddings
+runStepRSGDBatch learningRate negK batches embeddings =
+  foldM updateBatch embeddings batches
   where
-    updateOne embs (u, v) = do
+    updateBatch embs batch = do
       let embList = M.toList embs
-          n = length embList
           idxMap = M.fromList $ zip (map fst embList) [0..]
-
-      -- 全単語ベクトルをまとめてテンソル化
-      let allVecs = map snd embList
-          stacked = stack (Dim 0) allVecs
-      
-      -- 勾配計算用に独立したテンソルを作成
+          stacked = stack (Dim 0) (map snd embList)
       independentStacked <- makeIndependent stacked
       let depStacked = toDependent independentStacked
-      
-      -- u, vのインデックスを取得
-      let idxU = fromIntegral $ fromJust $ M.lookup u idxMap
-          idxV = fromIntegral $ fromJust $ M.lookup v idxMap
-      -- putStrLn $ "----------------------------------------"
-      -- putStrLn $ "Processing pair: (" ++ show idxU ++ ", " ++ show idxV ++ ")"
-      -- putStrLn $ "pair: (" ++ u ++ ", " ++ v ++ ")"
 
-      -- ネガティブサンプルをランダムに選ぶ
-      negIdxs <- sampleNegatives n negK (fromIntegral idxV)
-      let candIdxs = (fromIntegral idxV) : map fromIntegral negIdxs
+      -- バッチ内の全ペアの損失を足す
+      lossTensors <- mapM (pairLossTensor depStacked idxMap negK) batch
+      let totalLoss = sumAll (stack (Dim 0) lossTensors)
 
-      -- uベクトルと候補(v+negatives)ベクトルを取得
-      let vecU = select 0 idxU depStacked
-          vecCandidates = map (\i -> select 0 i depStacked) candIdxs
-      
-      let dists = map (poincareDistance vecU) vecCandidates
-          negDists = map (\dt -> exp (asTensor (0.0 :: Float) - dt)) dists
-          sumExp = sumAll (stack (Dim 0) negDists)
-          dPos = head dists
-          lossTensor = dPos + log sumExp
-
-      -- putStrLn $ "distance: " ++ show dists
       -- 勾配計算
-      let Gradients grads = grad' lossTensor [independentStacked]
-      -- putStrLn $ "grads: " ++ show grads
+      let Gradients grads = grad' totalLoss [independentStacked]
 
       case grads of
         (gradTensor : _) -> do
           updatedResults <- mapM (\(word, vec) -> do
-            let i = fromJust $ M.lookup word idxMap
-                gVec = select 0 (fromIntegral i) gradTensor
-                depVec = select 0 (fromIntegral i) depStacked
-                normSquared = sumAll (depVec * depVec)
-                tmp = 1.0 - asValue normSquared :: Float
-                coeff = (asTensor tmp * asTensor tmp) / asTensor (4.0 :: Float)
-                riemGrad = coeff * gVec
-                lrTensor = asTensor (learningRate :: Float)
-                updated = vec - lrTensor * riemGrad 
-                projected = projectToBall updated
-            return (word, projected)
+              let i = fromJust $ M.lookup word idxMap
+                  gVec = select 0 (fromIntegral i) gradTensor
+                  depVec = select 0 (fromIntegral i) depStacked
+                  normSquared = sumAll (depVec * depVec)
+                  tmp = 1.0 - asValue normSquared :: Float
+                  coeff = (asTensor tmp * asTensor tmp) / asTensor (4.0 :: Float)
+                  riemGrad = coeff * gVec
+                  lrTensor = asTensor learningRate
+                  updated = vec - lrTensor * riemGrad
+                  projected = projectToBall updated
+              return (word, projected)
             ) embList
           return $ M.fromList updatedResults
         [] -> error "Empty gradient list"
+
+-- ペア1つに対する損失テンソルを作る
+pairLossTensor :: Tensor                        -- stacked embeddings
+                -> M.Map String Int              -- 単語→インデックスのマップ
+                -> Int                           -- negK
+                -> (String, String)              -- (u,v)
+                -> IO Tensor                     -- 損失テンソル
+pairLossTensor depStacked idxMap negK (u,v) = do
+  let idxU = fromJust $ M.lookup u idxMap
+      idxV = fromJust $ M.lookup v idxMap
+      n = shape depStacked !! 0
+  negIdxs <- sampleNegatives n negK (fromIntegral idxV)
+  let candIdxs = (fromIntegral idxV) : map fromIntegral negIdxs
+      vecU = select 0 idxU depStacked
+      vecCandidates = map (\i -> select 0 i depStacked) candIdxs
+      dists = map (poincareDistance vecU) vecCandidates
+      negDists = map (\dt -> exp (asTensor (0.0 :: Float) - dt)) dists
+      sumExp = sumAll (stack (Dim 0) negDists)
+      dPos = head dists
+  return $ dPos + log sumExp
 
 train :: Int      -- epochs
       -> Float    -- base learning rate η
       -> Int      -- neg samples per positive k
       -> Int      -- burn-in coefficient c (use η/c during burn-in)
       -> Int      -- burn-in epochs
+      -> Int      -- batch size
       -> [(String,String)] -- input pairs
       -> Embeddings -- initial embeddings
       -> IO (Embeddings, [Float]) -- trained embeddings + loss history
-train epochs baseLR negK burnC burnEpochs pairs embs0 =
+train epochs baseLR negK burnC burnEpochs batchSize pairs embs0 =
   foldM step (embs0, []) [1..epochs]
   where
     step (embs, losses) epoch = do
       let lr = if epoch <= burnEpochs then baseLR / fromIntegral burnC else baseLR
-      newEmbs <- runStepRSGD lr negK pairs embs
+          batches = makeBatches batchSize pairs
+      newEmbs <- runStepRSGDBatch lr negK batches embs
       lossVal <- computeDatasetLoss newEmbs pairs negK
       when (epoch `mod` 1 == 0) $
         putStrLn $ "Epoch " ++ show epoch ++ "  lr=" ++ show lr ++ "  Loss=" ++ show lossVal
@@ -238,12 +239,13 @@ saveEmbeddings path embs = do
 main :: IO ()
 main = do
   let dim = 3
-      epochs = 500
+      epochs = 200
       baseLR = 0.01
       negK = 4
       burnC = 10
       burnEpochs = 10
-      csvPath = "data/Hyperbolic/hypernym_relations_jpn_nouns_head_100.csv"
+      batchSize = 512
+      csvPath = "data/Hyperbolic/hypernym_relations_jpn_nouns_head_1000.csv"
 
   pairs <- readPairsFromCSV csvPath
   wordSet <- readWordsFromCSV csvPath
@@ -258,9 +260,9 @@ main = do
   --     Nothing -> putStrLn "One or both words not found."
 
   putStrLn "Start training..."
-  (trained, lossHistory) <- train epochs baseLR negK burnC burnEpochs pairs embeddings
+  (trained, lossHistory) <- train epochs baseLR negK burnC burnEpochs batchSize pairs embeddings
   putStrLn "Training finished."
   printEmbeddings trained
 
-  drawLearningCurve "charts/poincare_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]
+  drawLearningCurve "charts/poincareBatch_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]
   saveEmbeddings "outputs/poincare_embeddings.csv" trained
