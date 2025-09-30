@@ -43,3 +43,70 @@ hyper,hypo
 お手伝い,お伴
 お手伝い,お伽
 ```
+
+## Poincare.hs & PoicareBatch.hs
+双曲埋め込み(ポアンカレ球)の学習の実装。Batchの方はミニバッジ処理で少し高速化している(約3倍？？)
+```
+docker-compose exec hasktorch /bin/bash -c "cd /home/ubuntu/Research && stack run Poincare"
+```
+
+```
+docker-compose exec hasktorch /bin/bash -c "cd /home/ubuntu/Research && stack run PoincareBatch"
+```
+
+
+出力
+```
+Initial embeddings:
+---------- print first 10 vectors of each word ----------
+お宅: Tensor Float [3] [-2.3763e-3, -8.4564e-4,  1.2921e-3]
+お家: Tensor Float [3] [ 4.6784e-4, -1.2693e-3, -1.0133e-3]
+はしか: Tensor Float [3] [ 1.7122e-3,  1.2836e-3, -7.9170e-4]
+アビタシオン: Tensor Float [3] [ 5.2966e-4, -9.0135e-4, -2.8914e-4]
+コンドミニアム: Tensor Float [3] [-1.0636e-3,  3.4757e-4, -2.0071e-3]
+ハイム: Tensor Float [3] [-1.5534e-3, -3.6205e-4, -6.5630e-5]
+ハウス: Tensor Float [3] [-1.2069e-3, -1.2000e-3, -9.9278e-4]
+ホーム: Tensor Float [3] [ 1.3778e-3, -3.4763e-4,  1.2477e-4]
+人屋: Tensor Float [3] [-6.6728e-4,  5.3335e-4, -1.3066e-3]
+令堂: Tensor Float [3] [-2.4815e-4,  8.8669e-5,  2.6835e-4]
+Start training...
+Epoch 1  lr=9.999999e-4  Loss=160.85977
+Epoch 2  lr=9.999999e-4  Loss=160.84433
+Epoch 3  lr=9.999999e-4  Loss=160.85078
+Epoch 4  lr=9.999999e-4  Loss=160.81923
+Epoch 5  lr=9.999999e-4  Loss=160.76196
+Epoch 6  lr=9.999999e-4  Loss=160.73874
+Epoch 7  lr=9.999999e-4  Loss=160.6806
+Epoch 8  lr=9.999999e-4  Loss=160.63033
+Epoch 9  lr=9.999999e-4  Loss=160.59387
+Epoch 10  lr=9.999999e-4  Loss=160.54202
+Epoch 11  lr=1.0e-2  Loss=160.28261
+Epoch 12  lr=1.0e-2  Loss=160.08806
+Epoch 13  lr=1.0e-2  Loss=159.46039
+Epoch 14  lr=1.0e-2  Loss=158.24991
+Epoch 15  lr=1.0e-2  Loss=157.45934
+Epoch 16  lr=1.0e-2  Loss=157.0401
+Epoch 17  lr=1.0e-2  Loss=156.22092
+Epoch 18  lr=1.0e-2  Loss=156.32066
+Epoch 19  lr=1.0e-2  Loss=155.56232
+Epoch 20  lr=1.0e-2  Loss=154.6321
+Epoch 21  lr=1.0e-2  Loss=153.90091
+Epoch 22  lr=1.0e-2  Loss=153.16173
+Epoch 23  lr=1.0e-2  Loss=152.51999
+Epoch 24  lr=1.0e-2  Loss=151.76865
+Epoch 25  lr=1.0e-2  Loss=151.22278
+```
+
+```
+word,dim1,dim2,dim3
+お宅,-0.20765054,-6.632064e-2,-4.750441e-2
+お家,-0.16524272,-0.60474765,0.6654285
+はしか,0.55452996,0.8006292,-2.7035845e-3
+アビタシオン,-0.181934,-3.9913647e-2,-5.860875e-2
+コンドミニアム,0.6296604,-5.3338062e-2,0.6084113
+ハイム,-0.19001885,-4.9799748e-2,-6.2640905e-2
+ハウス,-0.77533317,0.18946433,0.47054604
+ホーム,-0.18943067,-4.7141515e-2,-6.517672e-2
+```
+
+![](/charts/poincareBatch_learning_curve.png "Learning Curve")
