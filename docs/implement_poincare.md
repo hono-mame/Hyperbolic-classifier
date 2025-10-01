@@ -199,3 +199,55 @@ NEXT: Try with larger data!!
 
 ### **data preprocessing for Hyperbolic Embedding**
 → [GenerateDatasetHyperbolic.hs](/app/GenerateDatasetHyperbolic.hs)
+
+### 現在の出力
+```
+Initial embeddings:
+---------- print first 10 vectors of each word ----------
+お宅: Tensor Float [3] [-7.3467e-4, -5.7016e-4,  3.2365e-4]
+お家: Tensor Float [3] [ 7.6125e-4,  1.0447e-3, -2.3754e-4]
+はしか: Tensor Float [3] [-2.0785e-3, -2.3214e-3,  3.5468e-4]
+アビタシオン: Tensor Float [3] [ 6.8949e-4,  1.9224e-4, -5.6979e-5]
+コンドミニアム: Tensor Float [3] [-2.3174e-3,  5.2256e-4,  9.9176e-4]
+ハイム: Tensor Float [3] [-8.1734e-4, -1.1401e-3, -1.0950e-3]
+ハウス: Tensor Float [3] [-1.0316e-3,  4.2649e-4, -2.7528e-4]
+ホーム: Tensor Float [3] [ 4.0078e-4, -5.0878e-4,  2.0702e-3]
+メゾン: Tensor Float [3] [ 2.3708e-4, -2.9983e-4, -1.8105e-3]
+人家: Tensor Float [3] [ 6.1576e-4,  2.0220e-4,  1.0237e-3]
+Start training...
+Epoch 1  lr=9.999999e-4  Loss=1609.5576
+Epoch 2  lr=9.999999e-4  Loss=1603.6775
+Epoch 3  lr=9.999999e-4  Loss=1600.4523
+Epoch 4  lr=9.999999e-4  Loss=1597.8865
+Epoch 5  lr=9.999999e-4  Loss=1595.2295
+Epoch 6  lr=9.999999e-4  Loss=1592.0463
+Epoch 7  lr=9.999999e-4  Loss=1589.7042
+Epoch 8  lr=9.999999e-4  Loss=1586.3315
+Epoch 9  lr=9.999999e-4  Loss=1582.907
+Epoch 10  lr=9.999999e-4  Loss=1579.6422
+Epoch 11  lr=1.0e-2  Loss=1587.2654
+Epoch 12  lr=1.0e-2  Loss=1544.9076
+Epoch 13  lr=1.0e-2  Loss=1522.1962
+Epoch 14  lr=1.0e-2  Loss=1495.3794
+Epoch 15  lr=1.0e-2  Loss=1477.927
+Epoch 16  lr=1.0e-2  Loss=1457.3933
+Epoch 17  lr=1.0e-2  Loss=1445.5736
+Epoch 18  lr=1.0e-2  Loss=1430.0063
+Epoch 19  lr=1.0e-2  Loss=1423.0619
+Epoch 20  lr=1.0e-2  Loss=1411.1384
+Epoch 21  lr=1.0e-2  Loss=1406.4517
+```
+
+```
+word,dim1,dim2,dim3
+お宅,-0.20765054,-6.632064e-2,-4.750441e-2
+お家,-0.16524272,-0.60474765,0.6654285
+はしか,0.55452996,0.8006292,-2.7035845e-3
+アビタシオン,-0.181934,-3.9913647e-2,-5.860875e-2
+コンドミニアム,0.6296604,-5.3338062e-2,0.6084113
+ハイム,-0.19001885,-4.9799748e-2,-6.2640905e-2
+ハウス,-0.77533317,0.18946433,0.47054604
+ホーム,-0.18943067,-4.7141515e-2,-6.517672e-2
+```
+
+![](/charts/poincareBatch_learning_curve.png "Learning Curve")

@@ -59,42 +59,38 @@ docker-compose exec hasktorch /bin/bash -c "cd /home/ubuntu/Research && stack ru
 ```
 Initial embeddings:
 ---------- print first 10 vectors of each word ----------
-お宅: Tensor Float [3] [-2.3763e-3, -8.4564e-4,  1.2921e-3]
-お家: Tensor Float [3] [ 4.6784e-4, -1.2693e-3, -1.0133e-3]
-はしか: Tensor Float [3] [ 1.7122e-3,  1.2836e-3, -7.9170e-4]
-アビタシオン: Tensor Float [3] [ 5.2966e-4, -9.0135e-4, -2.8914e-4]
-コンドミニアム: Tensor Float [3] [-1.0636e-3,  3.4757e-4, -2.0071e-3]
-ハイム: Tensor Float [3] [-1.5534e-3, -3.6205e-4, -6.5630e-5]
-ハウス: Tensor Float [3] [-1.2069e-3, -1.2000e-3, -9.9278e-4]
-ホーム: Tensor Float [3] [ 1.3778e-3, -3.4763e-4,  1.2477e-4]
-人屋: Tensor Float [3] [-6.6728e-4,  5.3335e-4, -1.3066e-3]
-令堂: Tensor Float [3] [-2.4815e-4,  8.8669e-5,  2.6835e-4]
+お宅: Tensor Float [3] [-7.3467e-4, -5.7016e-4,  3.2365e-4]
+お家: Tensor Float [3] [ 7.6125e-4,  1.0447e-3, -2.3754e-4]
+はしか: Tensor Float [3] [-2.0785e-3, -2.3214e-3,  3.5468e-4]
+アビタシオン: Tensor Float [3] [ 6.8949e-4,  1.9224e-4, -5.6979e-5]
+コンドミニアム: Tensor Float [3] [-2.3174e-3,  5.2256e-4,  9.9176e-4]
+ハイム: Tensor Float [3] [-8.1734e-4, -1.1401e-3, -1.0950e-3]
+ハウス: Tensor Float [3] [-1.0316e-3,  4.2649e-4, -2.7528e-4]
+ホーム: Tensor Float [3] [ 4.0078e-4, -5.0878e-4,  2.0702e-3]
+メゾン: Tensor Float [3] [ 2.3708e-4, -2.9983e-4, -1.8105e-3]
+人家: Tensor Float [3] [ 6.1576e-4,  2.0220e-4,  1.0237e-3]
 Start training...
-Epoch 1  lr=9.999999e-4  Loss=160.85977
-Epoch 2  lr=9.999999e-4  Loss=160.84433
-Epoch 3  lr=9.999999e-4  Loss=160.85078
-Epoch 4  lr=9.999999e-4  Loss=160.81923
-Epoch 5  lr=9.999999e-4  Loss=160.76196
-Epoch 6  lr=9.999999e-4  Loss=160.73874
-Epoch 7  lr=9.999999e-4  Loss=160.6806
-Epoch 8  lr=9.999999e-4  Loss=160.63033
-Epoch 9  lr=9.999999e-4  Loss=160.59387
-Epoch 10  lr=9.999999e-4  Loss=160.54202
-Epoch 11  lr=1.0e-2  Loss=160.28261
-Epoch 12  lr=1.0e-2  Loss=160.08806
-Epoch 13  lr=1.0e-2  Loss=159.46039
-Epoch 14  lr=1.0e-2  Loss=158.24991
-Epoch 15  lr=1.0e-2  Loss=157.45934
-Epoch 16  lr=1.0e-2  Loss=157.0401
-Epoch 17  lr=1.0e-2  Loss=156.22092
-Epoch 18  lr=1.0e-2  Loss=156.32066
-Epoch 19  lr=1.0e-2  Loss=155.56232
-Epoch 20  lr=1.0e-2  Loss=154.6321
-Epoch 21  lr=1.0e-2  Loss=153.90091
-Epoch 22  lr=1.0e-2  Loss=153.16173
-Epoch 23  lr=1.0e-2  Loss=152.51999
-Epoch 24  lr=1.0e-2  Loss=151.76865
-Epoch 25  lr=1.0e-2  Loss=151.22278
+Epoch 1  lr=9.999999e-4  Loss=1609.5576
+Epoch 2  lr=9.999999e-4  Loss=1603.6775
+Epoch 3  lr=9.999999e-4  Loss=1600.4523
+Epoch 4  lr=9.999999e-4  Loss=1597.8865
+Epoch 5  lr=9.999999e-4  Loss=1595.2295
+Epoch 6  lr=9.999999e-4  Loss=1592.0463
+Epoch 7  lr=9.999999e-4  Loss=1589.7042
+Epoch 8  lr=9.999999e-4  Loss=1586.3315
+Epoch 9  lr=9.999999e-4  Loss=1582.907
+Epoch 10  lr=9.999999e-4  Loss=1579.6422
+Epoch 11  lr=1.0e-2  Loss=1587.2654
+Epoch 12  lr=1.0e-2  Loss=1544.9076
+Epoch 13  lr=1.0e-2  Loss=1522.1962
+Epoch 14  lr=1.0e-2  Loss=1495.3794
+Epoch 15  lr=1.0e-2  Loss=1477.927
+Epoch 16  lr=1.0e-2  Loss=1457.3933
+Epoch 17  lr=1.0e-2  Loss=1445.5736
+Epoch 18  lr=1.0e-2  Loss=1430.0063
+Epoch 19  lr=1.0e-2  Loss=1423.0619
+Epoch 20  lr=1.0e-2  Loss=1411.1384
+Epoch 21  lr=1.0e-2  Loss=1406.4517
 ```
 
 ```
