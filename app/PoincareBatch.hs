@@ -3,6 +3,7 @@
 module PoincareBatch (main) where
 
 import qualified Data.Set as S
+import qualified Data.Map as M
 import Torch.Tensor()
 import ML.Exp.Chart (drawLearningCurve)
 
@@ -19,11 +20,11 @@ main = do
   let dim = 3
       epochs = 200
       baseLR = 0.01
-      negK = 4
+      negK = 5
       burnC = 10
       burnEpochs = 10
       batchSize = 512
-      csvPath = "data/Hyperbolic/hypernym_relations_jpn_nouns_head_1000.csv"
+      csvPath = "data/Hyperbolic/eval_test_train.csv"
 
   pairs <- readPairsFromCSV csvPath
   wordSet <- readWordsFromCSV csvPath
@@ -42,5 +43,5 @@ main = do
   putStrLn "Training finished."
   printEmbeddings trained
 
-  drawLearningCurve "charts/poincareBatch_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]
-  saveEmbeddings "outputs/poincare_embeddings.csv" trained
+  drawLearningCurve "charts/eval_test_learning_curve.png" "Poincare Embedding Loss" [("Training Loss", lossHistory)]
+  saveEmbeddings "outputs/eval_test_poincare_embeddings.csv" trained

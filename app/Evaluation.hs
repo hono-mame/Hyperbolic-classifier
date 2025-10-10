@@ -4,44 +4,108 @@ module Evaluation (main) where
 
 import qualified NLP.Scores as NLP
 import qualified Data.Set as Set
-import Data.List.NonEmpty (fromList)
+import qualified Data.Map as M
+import Data.List (sortOn, elemIndex)
+import Data.Ord (Down(..))
+import Control.Monad (forM, forM_)
+import Data.List.Split (splitOn)
+import Text.Read (readMaybe)
+import Torch.Tensor (Tensor, asTensor)
+import System.IO (openFile, hSetEncoding, utf8, IOMode(ReadMode), hClose, hGetContents)
+import Control.Exception (bracket)
+import Data.Maybe (isJust, mapMaybe)
+
+import PoincareUtils (
+    Embeddings,
+    readPairsFromCSV,
+    distanceBetweenWords,
+    Entity
+    )
+
+readEmbeddingsCSV :: FilePath -> IO Embeddings
+readEmbeddingsCSV path = do
+    contents <- bracket (openFile path ReadMode) hClose $ \handle -> do
+        hSetEncoding handle utf8
+        s <- hGetContents handle
+        length s `seq` return s
+
+    let ls = drop 1 $ lines contents
+        parsedLines = map (parseLine . splitOn ",") ls
+        validEmbeddings = M.fromList [p | Just p <- parsedLines]
+    return validEmbeddings
+  where
+    parseLine (word:dims) =
+        case traverse (readMaybe :: String -> Maybe Float) dims of
+            Just floats -> Just (word, asTensor (floats :: [Float]))
+            Nothing -> Nothing
+    parseLine _ = Nothing
+
+groupByHypernym :: [(String, String)] -> M.Map String [String]
+groupByHypernym pairs =
+    M.fromListWith (++) [(hyper, [hypo]) | (hyper, hypo) <- pairs]
 
 main :: IO ()
 main = do
-    putStrLn "This is for evaluation"
+    putStrLn "--- Hyperbolic Embedding Evaluation ---"
 
-    putStrLn "\n--- Reciprocal Rank Tests ---"
+    let trainedEmbPath = "outputs/eval_test_poincare_embeddings.csv"
+        evalDataPath = "data/Hyperbolic/eval_test_eval.csv"
+
+    embeddings <- readEmbeddingsCSV trainedEmbPath
+    putStrLn $ "Loaded " ++ show (M.size embeddings) ++ " embeddings from " ++ trainedEmbPath
+
+    evalPairs <- readPairsFromCSV evalDataPath
+    putStrLn $ "Loaded " ++ show (length evalPairs) ++ " evaluation pairs."
+
+    let allWords = M.keys embeddings
+        groupedPairs = groupByHypernym evalPairs
+        hypers = M.keys groupedPairs
+
+    results <- forM hypers $ \u -> do
+        let hypos = groupedPairs M.! u
+            distances = [ (w, distanceBetweenWords embeddings u w)
+                        | w <- allWords, w /= u ]
+            validDists = mapMaybe (\(w, md) -> fmap (\d -> (w, d)) md) distances
+            rankedList = map fst $ sortOn snd validDists
+
+            ranksFound = mapMaybe (`elemIndex` rankedList) hypos
+            rankValue = case ranksFound of
+                [] -> fromIntegral (length rankedList)
+                rs -> fromIntegral (minimum rs + 1)
+
+            goldSet = Set.fromList hypos
+            apValue = NLP.avgPrecision goldSet rankedList
+
+        putStrLn $ "\n[DEBUG] Anchor: " ++ u
+        putStrLn $ "  Hyponyms: " ++ unwords hypos
+        putStrLn $ "  Top 10 nearest words: " ++ unwords (take 10 rankedList)
+        putStrLn $ "  Rank: " ++ show rankValue
+        putStrLn $ "  Mean Average Precision (MAP): " ++ show apValue
+
+        return (rankValue, apValue)
+
+    let meanRank = sum (map fst results) / fromIntegral (length results)
+        meanAP   = sum (map snd results) / fromIntegral (length results)
+
+    putStrLn "\n--- Evaluation Results (Link Prediction) ---"
+    putStrLn $ "Total Hypernyms: " ++ show (length results)
+    putStrLn $ "Mean Rank: " ++ show meanRank
+    putStrLn $ "Mean Average Precision (MAP): " ++ show meanAP
+
+    putStrLn "\n--- Verification Tests ---"
     let test1 = NLP.recipRank 5 [1, 2, 5, 8]
-    putStrLn $ "Reciprocal Rank (RR) for [1,2,5,8] with relevant at 5 (should be 0.3333333): " ++ show test1
+    putStrLn $ "RR for [1,2,5,8] with relevant at 5: " ++ show test1
 
-    let test2 = NLP.recipRank 10 [10, 5, 20]
-    putStrLn $ "Reciprocal Rank (RR) for [10,5,20] with relevant at 10 (should be 1.0): " ++ show test2
-
-    putStrLn "\n--- Average Precision Tests ---"
-    -- 正解集合: {A, B}
-    -- 検索結果: [A, B, C, D]
-    -- AP = (1/1 + 2/2) / 2 = (1.0 + 1.0) / 2 = 1.0
-    let gold1 = Set.fromList ["A", "B"]
-    let retrieved1 = ["A", "B", "C", "D"] :: [String]
-    let ap1 = NLP.avgPrecision gold1 retrieved1
-    putStrLn $ "AP Test 1 (should be 1.0): " ++ show ap1
-
-    -- 正解集合: {A, B}
-    -- 検索結果: [C, D, A, B]
-    -- 適合 at 3 (A): 1/3
-    -- 適合 at 4 (B): 2/4
-    -- AP = (1/3 + 2/4) / 2 = (0.333... + 0.5) / 2 = 0.4166...
     let gold2 = Set.fromList [5, 10]
-    let retrieved2 = [1, 2, 5, 10] :: [Int]
-    let ap2 = NLP.avgPrecision gold2 retrieved2
-    putStrLn $ "AP Test 2 (should be 0.4166666666666667): " ++ show ap2
+        retrieved2 = [1, 2, 5, 10] :: [Int]
+        ap2 = NLP.avgPrecision gold2 retrieved2
+    putStrLn $ "AP Test (should be 0.4166...): " ++ show ap2
 
-    -- 正解集合: {A, B, C}
-    -- 検索結果: [A, X, B, Y] (Cは含まれない)
-    -- 適合 at 1 (A): 1/1
-    -- 適合 at 3 (B): 2/3
-    -- AP = (1/1 + 2/3) / 3 (正解集合のサイズ) = (1.0 + 0.666...) / 3 = 0.555...
-    let gold3 = Set.fromList ['A', 'B', 'C']
-    let retrieved3 = ['A', 'X', 'B', 'Y'] :: [Char]
-    let ap3 = NLP.avgPrecision gold3 retrieved3
-    putStrLn $ "AP Test 3 (should be 0.5555555555555556): " ++ show ap3
+  where
+    elemIndex :: Eq a => a -> [a] -> Maybe Int
+    elemIndex x = go 0
+      where
+        go _ [] = Nothing
+        go n (y:ys)
+          | x == y    = Just n
+          | otherwise = go (n + 1) ys
