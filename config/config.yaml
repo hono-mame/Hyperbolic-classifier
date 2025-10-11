@@ -1,4 +1,4 @@
-dim: 3
+dim: 5
 epochs: 300
 baseLR: 0.01
 negK: 5
