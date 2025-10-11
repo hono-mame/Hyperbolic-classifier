@@ -1,0 +1,9 @@
+dim: 3
+epochs: 300
+baseLR: 0.01
+negK: 5
+burnC: 10
+burnEpochs: 10
+batchSize: 512
+trainCSV: data/Hyperbolic/eval_test_train.csv
+evalCSV: data/Hyperbolic/eval_test_eval.csv

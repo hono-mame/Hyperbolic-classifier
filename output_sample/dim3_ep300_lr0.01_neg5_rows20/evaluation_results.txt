@@ -1,0 +1,4 @@
+--- Evaluation Results (Link Prediction) ---
+Total Hypernyms: 4
+Mean Rank: 4.5
+Mean Average Precision (MAP): 0.24166666666666664
