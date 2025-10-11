@@ -142,6 +142,13 @@ packages:
       size: 249
   original:
     hackage: jsonl-0.2.0.0@sha256:35f8a3816f0b93830008709a8e64c0c69b9bc632a92c54b3be3345bfccba4a5c,1465
+- completed:
+    hackage: nlp-scores-0.1.0@sha256:0668da544b9ff6f536143240a0eb91361e6e1c3164e6a7c3e8156cc5da37680e,1861
+    pantry-tree:
+      sha256: 53191362b923b7f6afbb03c8536c09289e33984b0efc5f7c12ac52114bc84cad
+      size: 208
+  original:
+    hackage: nlp-scores-0.1.0@sha256:0668da544b9ff6f536143240a0eb91361e6e1c3164e6a7c3e8156cc5da37680e,1861
 snapshots:
 - completed:
     sha256: 5a59b2a405b3aba3c00188453be172b85893cab8ebc352b1ef58b0eae5d248a2

@@ -42,6 +42,7 @@ extra-deps:
     commit: 020a3d6cc02dc64e18db7219d343e8473f880a91
 # for hasktorch-nlp-introduction 
   - jsonl-0.2.0.0@sha256:35f8a3816f0b93830008709a8e64c0c69b9bc632a92c54b3be3345bfccba4a5c,1465
+  - nlp-scores-0.1.0@sha256:0668da544b9ff6f536143240a0eb91361e6e1c3164e6a7c3e8156cc5da37680e,1861
 
 build:
   haddock: false

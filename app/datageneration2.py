@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split # 分割にはsklearnの利
 # 名詞だけに絞るかどうか
 filter_nouns = True  # True: 名詞のみ, False: 全品詞
 
-# 先頭 n 行だけを保存
-n_head = 1000
+# ランダムに抽出する行数
+n_head = 1000 
 
 conn = sqlite3.connect("/Users/honokakobayashi/dev/Univ/Research/data/wnjpn.db")
 
@@ -32,17 +32,20 @@ if filter_nouns:
 df = pd.read_sql_query(query, conn)
 base_path = "/Users/honokakobayashi/dev/Univ/Research/data/Hyperbolic/"
 file_suffix = "_nouns" if filter_nouns else ""
-n_head_suffix = f"_head_{n_head}" if n_head else "" # n_headを使わない場合も考慮
 
-# 全データの保存
+# 【変更箇所】ファイル名に "_random" を追加
+n_head_suffix = f"_random_{n_head}" if n_head else "" 
+
+# 全データの保存（このファイル名は変更なし）
 output_file = base_path + f"hypernym_relations_jpn{file_suffix}.csv"
 df.to_csv(output_file, index=False, encoding="utf-8")
 print(f"抽出完了。 {len(df)} 行を {output_file} に保存しました。")
 
-# 先頭 n_head 行の抽出
+# ランダムに n_head 行の抽出
 if n_head > 0 and n_head < len(df):
-    df_head = df.head(n_head).copy() # headのデータフレームを作成
-    print(f"先頭 {n_head} 行のデータフレームを作成しました。")
+    # ランダムサンプリング
+    df_head = df.sample(n=n_head, replace=False, random_state=42).copy()
+    print(f"ランダムに {n_head} 行を抽出したデータフレームを作成しました。")
 else:
     df_head = df.copy() # n_headを指定しない、または全行の場合
     print("全行を使用します。")
@@ -53,11 +56,13 @@ df_train, df_test = train_test_split(df_head, test_size=0.2, random_state=42)
 
 # 保存
 # 訓練データ (80%)
+# 【変更箇所】ファイル名に "_random_n" が含まれます
 train_file = base_path + f"hypernym_relations_jpn{file_suffix}_train{n_head_suffix}.csv"
 df_train.to_csv(train_file, index=False, encoding="utf-8")
 print(f"訓練データ: {len(df_train)} 行を {train_file} に保存しました。")
 
 # テストデータ (20%)
+# 【変更箇所】ファイル名に "_random_n" が含まれます
 test_file = base_path + f"hypernym_relations_jpn{file_suffix}_eval{n_head_suffix}.csv"
 df_test.to_csv(test_file, index=False, encoding="utf-8")
 print(f"テストデータ: {len(df_test)} 行を {test_file} に保存しました。")

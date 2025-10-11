@@ -44,18 +44,21 @@ library
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
 
 executable DataLoading
   main-is: DataLoading.hs
   other-modules:
+      Evaluation
       GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Poincare
@@ -75,12 +78,48 @@ executable DataLoading
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
+    , vector
+  default-language: Haskell2010
+
+executable Evaluation
+  main-is: Evaluation.hs
+  other-modules:
+      DataLoading
+      GenerateDatasetHyperbolic
+      GenerateDatasetMLP
+      Poincare
+      PoincareBatch
+      Preprocess
+      Paths_Research
+  autogen-modules:
+      Paths_Research
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -main-is Evaluation
+  build-depends:
+      Research
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , hasktorch
+    , hmatrix
+    , nlp-scores <0.2.0
+    , nlp-tools
+    , process
+    , random
+    , random-shuffle
+    , split
+    , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
 
@@ -88,6 +127,7 @@ executable GenerateDatasetHyperbolic
   main-is: GenerateDatasetHyperbolic.hs
   other-modules:
       DataLoading
+      Evaluation
       GenerateDatasetMLP
       Poincare
       PoincareBatch
@@ -106,12 +146,14 @@ executable GenerateDatasetHyperbolic
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
 
@@ -119,6 +161,7 @@ executable GenerateDatasetMLP
   main-is: GenerateDatasetMLP.hs
   other-modules:
       DataLoading
+      Evaluation
       GenerateDatasetHyperbolic
       Poincare
       PoincareBatch
@@ -137,12 +180,14 @@ executable GenerateDatasetMLP
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
 
@@ -150,6 +195,7 @@ executable Poincare
   main-is: Poincare.hs
   other-modules:
       DataLoading
+      Evaluation
       GenerateDatasetHyperbolic
       GenerateDatasetMLP
       PoincareBatch
@@ -168,12 +214,14 @@ executable Poincare
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
 
@@ -181,6 +229,7 @@ executable PoincareBatch
   main-is: PoincareBatch.hs
   other-modules:
       DataLoading
+      Evaluation
       GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Poincare
@@ -199,12 +248,14 @@ executable PoincareBatch
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
 
@@ -212,6 +263,7 @@ executable Preprocess
   main-is: Preprocess.hs
   other-modules:
       DataLoading
+      Evaluation
       GenerateDatasetHyperbolic
       GenerateDatasetMLP
       Poincare
@@ -230,12 +282,14 @@ executable Preprocess
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
 
@@ -257,11 +311,13 @@ test-suite Research-test
     , containers
     , hasktorch
     , hmatrix
+    , nlp-scores <0.2.0
     , nlp-tools
     , process
     , random
     , random-shuffle
     , split
     , sqlite-simple
+    , text
     , vector
   default-language: Haskell2010
