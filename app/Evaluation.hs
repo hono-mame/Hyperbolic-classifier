@@ -6,7 +6,6 @@ import qualified NLP.Scores as NLP
 import qualified Data.Set as Set
 import qualified Data.Map as M
 import Data.List (sortOn, elemIndex)
-import Data.Ord (Down(..))
 import Control.Monad (forM, when)
 import Data.List.Split (splitOn)
 import Text.Read (readMaybe)
@@ -24,7 +23,6 @@ import PoincareUtils (
     distanceBetweenWords
     )
 
--- 読み込み関数
 readEmbeddingsCSV :: FilePath -> IO Embeddings
 readEmbeddingsCSV path = do
     contents <- bracket (openFile path ReadMode) hClose $ \handle -> do
@@ -50,57 +48,75 @@ groupByHypernym pairs =
 main :: IO ()
 main = do
     args <- getArgs
-    when (length args < 3) $
-        error "Usage: stack run Evaluation <embeddings.csv> <eval.csv> <output.txt>"
+    when (length args < 4) $
+        error "Usage: stack run Evaluation <embeddings.csv> <eval.csv> <train.csv> <output.txt>"
 
     let trainedEmbPath = args !! 0
         evalDataPath   = args !! 1
-        resultFile     = args !! 2
+        trainDataPath  = args !! 2
+        resultFile     = args !! 3
 
-    putStrLn "--- Hyperbolic Embedding Evaluation ---"
+    putStrLn "--- Hyperbolic Embedding Evaluation (Filtered) ---"
     putStrLn $ "Embeddings: " ++ trainedEmbPath
     putStrLn $ "Eval data : " ++ evalDataPath
+    putStrLn $ "Train data: " ++ trainDataPath
     putStrLn $ "Result out: " ++ resultFile
 
     embeddings <- readEmbeddingsCSV trainedEmbPath
     evalPairs  <- readPairsFromCSV evalDataPath
+    trainPairs <- readPairsFromCSV trainDataPath
 
     putStrLn $ "Loaded " ++ show (M.size embeddings) ++ " embeddings"
-    putStrLn $ "Loaded " ++ show (length evalPairs) ++ " evaluation pairs."
+    putStrLn $ "Loaded " ++ show (length evalPairs) ++ " eval pairs"
+    putStrLn $ "Loaded " ++ show (length trainPairs) ++ " train pairs"
 
     let allWords = M.keys embeddings
-        groupedPairs = groupByHypernym evalPairs
-        hypers = M.keys groupedPairs
-
-    results <- forM hypers $ \u -> do
-        let hypos = groupedPairs M.! u
+        groupedEvalPairs = groupByHypernym evalPairs
+        groupedTrainPairs = groupByHypernym trainPairs
+        hypers = M.keys groupedEvalPairs
+        debugLimit = 5
+    resultsAndDebug <- forM (zip [1..] hypers) $ \(idx, u) -> do
+        let hyposEval = groupedEvalPairs M.! u
+            knownHypos = Set.fromList (M.findWithDefault [] u groupedTrainPairs)  -- trainのみ除外対象
+            candidateWords = [w | w <- allWords, w /= u, not (Set.member w knownHypos)]
             distances = [ (w, distanceBetweenWords embeddings u w)
-                        | w <- allWords, w /= u ]
+                        | w <- candidateWords ]
             validDists = mapMaybe (\(w, md) -> fmap (\d -> (w, d)) md) distances
             rankedList = map fst $ sortOn snd validDists
-            ranksFound = mapMaybe (`elemIndex` rankedList) hypos
+            ranksFound = mapMaybe (`elemIndex` rankedList) hyposEval
             rankValue = case ranksFound of
                 [] -> fromIntegral (length rankedList)
                 rs -> fromIntegral (minimum rs + 1)
-            goldSet = Set.fromList hypos
+            goldSet = Set.fromList hyposEval
             apValue = NLP.avgPrecision goldSet rankedList
+            debugText =
+                if idx <= debugLimit
+                then [ T.unlines
+                       [ "[DEBUG] Anchor: " <> T.pack u
+                       , "  Eval hyponyms (gold): " <> T.pack (unwords hyposEval)
+                       , "  Filtered (train) hypos: " <> T.pack (unwords (Set.toList knownHypos))
+                       , "  Candidates after filtering: " <> T.pack (show (length candidateWords))
+                       , "  Top 10 nearest words: " <> T.pack (unwords (take 10 rankedList))
+                       , "  Rank: " <> T.pack (show rankValue)
+                       , "  Mean Average Precision (MAP): " <> T.pack (show apValue)
+                       , ""
+                       ]
+                     ]
+                else []
 
-        -- putStrLn $ "\n[DEBUG] Anchor: " ++ u
-        -- putStrLn $ "  Hyponyms: " ++ unwords hypos
-        -- putStrLn $ "  Top 10 nearest words: " ++ unwords (take 10 rankedList)
-        -- putStrLn $ "  Rank: " ++ show rankValue
-        -- putStrLn $ "  Mean Average Precision (MAP): " ++ show apValue
-
-        return (rankValue, apValue)
-
+        return ((rankValue, apValue), debugText)
+    let results = [r | (r, _) <- resultsAndDebug]
+        debugInfo = concat [d | (_, d) <- resultsAndDebug]
     let meanRank = sum (map fst results) / fromIntegral (length results)
         meanAP   = sum (map snd results) / fromIntegral (length results)
-        summary = T.unlines
-          [ "--- Evaluation Results (Link Prediction) ---"
+        summary = T.unlines $
+          [ "--- Filtered Evaluation Results (Link Prediction) ---"
           , "Total Hypernyms: " <> T.pack (show (length results))
           , "Mean Rank: " <> T.pack (show meanRank)
           , "Mean Average Precision (MAP): " <> T.pack (show meanAP)
-          ]
+          , ""
+          , "--- DEBUG (first 5 anchors) ---"
+          ] ++ debugInfo
 
     putStrLn $ T.unpack summary
     TIO.writeFile resultFile summary
