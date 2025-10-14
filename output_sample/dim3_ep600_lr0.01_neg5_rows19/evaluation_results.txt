@@ -1,0 +1,42 @@
+--- Filtered Evaluation Results (Link Prediction) ---
+Total Hypernyms: 4
+Mean Rank: 1.0
+Mean Average Precision (MAP): 1.0
+
+--- DEBUG (first 5 anchors) ---
+[DEBUG] Anchor: 乗り物
+  Eval hyponyms (gold): トラック
+  Filtered (train) hypos: バス 車 電車
+  Candidates after filtering: 19
+  Top 10 nearest words: トラック 荷台 歴史 社会 ヒマワリ 花びら 魚 マグロ 理科 国語
+  Rank: 1.0
+  Mean Average Precision (MAP): 1.0
+
+
+[DEBUG] Anchor: 動物
+  Eval hyponyms (gold): 魚
+  Filtered (train) hypos: マグロ 犬 鳥
+  Candidates after filtering: 19
+  Top 10 nearest words: 魚 歴史 社会 ヒマワリ 花びら 荷台 トラック 車 理科 教科
+  Rank: 1.0
+  Mean Average Precision (MAP): 1.0
+
+
+[DEBUG] Anchor: 教科
+  Eval hyponyms (gold): 歴史
+  Filtered (train) hypos: 国語 理科 社会 算数
+  Candidates after filtering: 18
+  Top 10 nearest words: 歴史 荷台 トラック 車 魚 マグロ ヒマワリ 花びら 鳥 動物
+  Rank: 1.0
+  Mean Average Precision (MAP): 1.0
+
+
+[DEBUG] Anchor: 植物
+  Eval hyponyms (gold): ヒマワリ
+  Filtered (train) hypos: バラ 松 桜 花びら
+  Candidates after filtering: 18
+  Top 10 nearest words: ヒマワリ 荷台 トラック 魚 マグロ 歴史 車 社会 鳥 動物
+  Rank: 1.0
+  Mean Average Precision (MAP): 1.0
+
+
