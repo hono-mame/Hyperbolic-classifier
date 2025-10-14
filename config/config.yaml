@@ -1,5 +1,5 @@
-dim: 5
-epochs: 300
+dim: 3
+epochs: 600
 baseLR: 0.01
 negK: 5
 burnC: 10
