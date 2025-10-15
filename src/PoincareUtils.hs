@@ -276,7 +276,7 @@ trainBatch epochs baseLR negK burnC burnEpochs batchSize pairs embs0 =
           batches = makeBatches batchSize pairs
       newEmbs <- runStepRSGDBatch lr negK batches embs
       lossVal <- computeDatasetLoss newEmbs pairs negK
-      when (epoch `mod` 20 == 0) $
+      when (epoch `mod` 1 == 0) $
         putStrLn $ "Epoch " ++ show epoch ++ "  lr=" ++ show lr ++ "  Loss=" ++ show lossVal
       return (newEmbs, losses ++ [lossVal])
 
