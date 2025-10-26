@@ -1,9 +1,13 @@
-dim: 3
-epochs: 600
-baseLR: 0.01
-negK: 5
-burnC: 10
+# --- dataset generation ---
+n_lines: 150
+filter_nouns: true
+use_transitive_closure: true
+
+# --- training settings ---
+dim: 5
+epochs: 100
+baseLR: 0.05
+negK: 10
+burnC: 0.1
 burnEpochs: 10
-batchSize: 512
-trainCSV: data/Hyperbolic/eval_test_train.csv
-evalCSV: data/Hyperbolic/eval_test_eval.csv
+batchSize: 256
