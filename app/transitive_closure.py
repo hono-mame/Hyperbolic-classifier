@@ -1,13 +1,18 @@
+#!/usr/bin/env python3
 import pandas as pd
 import networkx as nx
+import sys
 
-df = pd.read_csv('/Users/honokakobayashi/dev/Univ/Research/data/Hyperbolic/hypernym_relations_jpn_nouns_train_random_1000.csv', header=None)
-# --- 有向グラフを作成 ---
+if len(sys.argv) < 3:
+    print("Usage: transitive_closure.py <input_csv> <output_csv>")
+    sys.exit(1)
+input_csv = sys.argv[1]
+output_csv = sys.argv[2]
+
+df = pd.read_csv(input_csv, header=None)
 G = nx.DiGraph()
 G.add_edges_from(df.values)
-# --- 推移閉包を計算 ---
 closure = nx.transitive_closure(G)
-
-closure_edges = list(closure.edges())
-closure_df = pd.DataFrame(closure_edges)
-closure_df.to_csv('/Users/honokakobayashi/dev/Univ/Research/data/Hyperbolic/transitive_hypernym_relations_jpn_nouns_train_random_1000.csv', index=False, header=False)
+closure_df = pd.DataFrame(list(closure.edges()))
+closure_df.to_csv(output_csv, index=False, header=False)
+print(f"Transitive closure saved to {output_csv}")

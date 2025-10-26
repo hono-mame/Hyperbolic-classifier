@@ -1,12 +1,17 @@
+#!/usr/bin/env python3
 import sqlite3
 import pandas as pd
-from sklearn.model_selection import train_test_split # 分割にはsklearnの利用を推奨
+from sklearn.model_selection import train_test_split
+import sys
+import os
 
-# 名詞だけに絞るかどうか
-filter_nouns = True  # True: 名詞のみ, False: 全品詞
-
-# ランダムに抽出する行数
-n_head = 1000 
+if len(sys.argv) < 4:
+    print("Usage: dataGenerationRandom.py <n_lines> <filter_nouns> <output_dir>")
+    sys.exit(1)
+n_lines = int(sys.argv[1])
+filter_nouns = sys.argv[2].lower() == "true"
+output_dir = sys.argv[3]
+os.makedirs(output_dir, exist_ok=True)
 
 conn = sqlite3.connect("/Users/honokakobayashi/dev/Univ/Research/data/wnjpn.db")
 
@@ -30,41 +35,21 @@ if filter_nouns:
     query += " AND sy1.pos = 'n' AND sy2.pos = 'n'"
 
 df = pd.read_sql_query(query, conn)
-base_path = "/Users/honokakobayashi/dev/Univ/Research/data/Hyperbolic/"
-file_suffix = "_nouns" if filter_nouns else ""
-
-# 【変更箇所】ファイル名に "_random" を追加
-n_head_suffix = f"_random_{n_head}" if n_head else "" 
-
-# 全データの保存（このファイル名は変更なし）
-output_file = base_path + f"hypernym_relations_jpn{file_suffix}.csv"
-df.to_csv(output_file, index=False, encoding="utf-8")
-print(f"抽出完了。 {len(df)} 行を {output_file} に保存しました。")
-
-# ランダムに n_head 行の抽出
-if n_head > 0 and n_head < len(df):
-    # ランダムサンプリング
-    df_head = df.sample(n=n_head, replace=False, random_state=42).copy()
-    print(f"ランダムに {n_head} 行を抽出したデータフレームを作成しました。")
+print(f"Total rows before sampling: {len(df)}")
+if 0 < n_lines < len(df):
+    df = df.sample(n=n_lines, replace=False, random_state=42)
+    print(f"Randomly sampled {n_lines} rows.")
 else:
-    df_head = df.copy() # n_headを指定しない、または全行の場合
-    print("全行を使用します。")
+    print("Using all rows.")
 
-# train_test_splitを使ってランダムに80%を訓練、20%をテストに分割
-df_train, df_test = train_test_split(df_head, test_size=0.2, random_state=42) 
+df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
 
+train_file = os.path.join(output_dir, "train.csv")
+eval_file = os.path.join(output_dir, "eval.csv")
+df_train.to_csv(train_file, index=False, header=False, encoding="utf-8")
+df_test.to_csv(eval_file, index=False, header=False, encoding="utf-8")
 
-# 保存
-# 訓練データ (80%)
-# 【変更箇所】ファイル名に "_random_n" が含まれます
-train_file = base_path + f"hypernym_relations_jpn{file_suffix}_train{n_head_suffix}.csv"
-df_train.to_csv(train_file, index=False, encoding="utf-8")
-print(f"訓練データ: {len(df_train)} 行を {train_file} に保存しました。")
-
-# テストデータ (20%)
-# 【変更箇所】ファイル名に "_random_n" が含まれます
-test_file = base_path + f"hypernym_relations_jpn{file_suffix}_eval{n_head_suffix}.csv"
-df_test.to_csv(test_file, index=False, encoding="utf-8")
-print(f"テストデータ: {len(df_test)} 行を {test_file} に保存しました。")
+print(f"Train saved to: {train_file}")
+print(f"Eval saved to : {eval_file}")
 
 conn.close()
