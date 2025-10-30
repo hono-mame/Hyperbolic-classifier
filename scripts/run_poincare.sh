@@ -50,8 +50,10 @@ docker-compose exec hasktorch /bin/bash -c "
     $dim $epochs $baseLR $negK $burnC $burnEpochs $batchSize \
     $train_csv $output_dir/embeddings.csv $output_dir/learning_curve.png
 "
+echo ">>> Step3: Running Python Poincaré embedding (Gensim)"
+python3 /Users/honokakobayashi/dev/Univ/Research/app/poincare.py "$train_csv" "$output_dir"
 
-echo ">>> Step3: Running Evaluation.hs"
+echo ">>> Step4: Running Evaluation.hs"
 eval_output="$output_dir/evaluation_results.txt"
 
 docker-compose exec hasktorch /bin/bash -c "
@@ -59,7 +61,7 @@ docker-compose exec hasktorch /bin/bash -c "
   stack run Evaluation $output_dir/embeddings.csv $eval_csv $train_csv $eval_output
 "
 
-echo ">>> Step4: Visualizing embeddings"
+echo ">>> Step5: Visualizing embeddings"
 python3 /Users/honokakobayashi/dev/Univ/Research/app/visualize.py \
   "$output_dir/embeddings.csv" "$output_dir/poincare_disk.pdf"
 
