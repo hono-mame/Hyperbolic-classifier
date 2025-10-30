@@ -56,7 +56,7 @@ use_transitive_closure: true
 transitive_closure.py <input_csv> <output_csv>
 ```
 ---
-### STEP2: Hyperbolic Embedding による学習
+### STEP2: Haskellでの学習
 作成したtrainデータに対して、学習を実行。    
 yamlで各パラメータを指定する。
 ```yaml
