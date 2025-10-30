@@ -77,7 +77,17 @@ docker-compose exec hasktorch /bin/bash -c "
     <path_to_train_csv> <path_to_output_embedding_csv> <path_to_output_lerningCurve.png>
 ```
 ---
-### STEP3: 学習後のEmbeddingの評価
+### STEP3: Pythonでの学習
+Pythonでも学習を実行して比較できるようにする。
+個別実行する際は以下のコマンド。
+```zsh
+docker-compose exec hasktorch /bin/bash -c "
+  cd /home/ubuntu/Research && \
+  stack run Evaluation <path_to_trained_embedding_csv> <path_to_eval_csv> <path_to_train_csv> <path_to_eval_output_txt>
+"
+```
+---
+### STEP4: 学習後のEmbeddingの評価 (Haskell)
 評価結果がテキストファイルとして出力される。RankとMAPが計算される。
 個別実行する際は以下のコマンド。
 ```zsh
@@ -87,7 +97,17 @@ docker-compose exec hasktorch /bin/bash -c "
 "
 ```
 ---
-### STEP4: Embeddingの可視化
+### STEP5: 学習後のEmbeddingの評価 (Python)
+評価結果がテキストファイルとして出力される。RankとMAPが計算される。
+個別実行する際は以下のコマンド。
+```zsh
+docker-compose exec hasktorch /bin/bash -c "
+  cd /home/ubuntu/Research && \
+  stack run Evaluation <path_to_trained_embedding_csv> <path_to_eval_csv> <path_to_train_csv> <path_to_eval_output_txt>
+"
+```
+---
+### STEP6: Embeddingの可視化
 Embeddingを２次元で可視化した結果を出力する。
 個別実行する際は以下のコマンド。
 ```zsh
