@@ -67,17 +67,23 @@ main = do
     trainPairs <- readPairsFromCSV trainDataPath
 
     putStrLn $ "Loaded " ++ show (M.size embeddings) ++ " embeddings"
-    putStrLn $ "Loaded " ++ show (length evalPairs) ++ " eval pairs"
+    putStrLn $ "Loaded " ++ show (length evalPairs) ++ " eval pairs (before filtering)"
     putStrLn $ "Loaded " ++ show (length trainPairs) ++ " train pairs"
 
+    let embeddingsSet = Set.fromList (M.keys embeddings)
+        filteredEvalPairs = [(hyper, hypo) | (hyper, hypo) <- evalPairs, 
+                                            Set.member hyper embeddingsSet, 
+                                            Set.member hypo embeddingsSet]
+    putStrLn $ "Filtered " ++ show (length filteredEvalPairs) ++ " eval pairs (both hyper/hypo exist)"
+
     let allWords = M.keys embeddings
-        groupedEvalPairs = groupByHypernym evalPairs
+        groupedEvalPairs = groupByHypernym filteredEvalPairs 
         groupedTrainPairs = groupByHypernym trainPairs
         hypers = M.keys groupedEvalPairs
         debugLimit = 5
     resultsAndDebug <- forM (zip [1..] hypers) $ \(idx, u) -> do
         let hyposEval = groupedEvalPairs M.! u
-            knownHypos = Set.fromList (M.findWithDefault [] u groupedTrainPairs)  -- trainのみ除外対象
+            knownHypos = Set.fromList (M.findWithDefault [] u groupedTrainPairs)
             candidateWords = [w | w <- allWords, w /= u, not (Set.member w knownHypos)]
             distances = [ (w, distanceBetweenWords embeddings u w)
                         | w <- candidateWords ]
@@ -111,7 +117,7 @@ main = do
         meanAP   = sum (map snd results) / fromIntegral (length results)
         summary = T.unlines $
           [ "--- Filtered Evaluation Results (Link Prediction) ---"
-          , "Total Hypernyms: " <> T.pack (show (length results))
+          , "Total Hypernyms (Evaluated): " <> T.pack (show (length results))
           , "Mean Rank: " <> T.pack (show meanRank)
           , "Mean Average Precision (MAP): " <> T.pack (show meanAP)
           , ""
