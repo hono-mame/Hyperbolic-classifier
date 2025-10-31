@@ -1,4 +1,4 @@
-# 実行方法について
+# 実行方法について (Haskell)
 ## 一括実行
 ```
 bash scripts/run_poincare.sh config/config.yaml 
@@ -81,10 +81,7 @@ docker-compose exec hasktorch /bin/bash -c "
 Pythonでも学習を実行して比較できるようにする。
 個別実行する際は以下のコマンド。
 ```zsh
-docker-compose exec hasktorch /bin/bash -c "
-  cd /home/ubuntu/Research && \
-  stack run Evaluation <path_to_trained_embedding_csv> <path_to_eval_csv> <path_to_train_csv> <path_to_eval_output_txt>
-"
+python3 /Users/honokakobayashi/dev/Univ/Research/app/poincare.py "$train_csv" "$output_txt"
 ```
 ---
 ### STEP4: 学習後のEmbeddingの評価 (Haskell)
@@ -113,4 +110,24 @@ Embeddingを２次元で可視化した結果を出力する。
 ```zsh
 python3 visualize.py <path_to_embeddings_csv>  <path_to_visualize_output_pdf>
 
+```
+
+# 実行方法について(Python)
+学習と評価のファイルを用意した上で実行する。
+学習と評価をPythonで実行するためのパイプライン。
+yamlは以下。
+```yaml
+train_csv_abs: "/Users/honokakobayashi/dev/Univ/Research/output/dim3_ep200_lr0.05_neg10_rows3000_20251028_215637/train.csv"
+output_dir_abs: "/Users/honokakobayashi/dev/Univ/Research/output/dim3_ep200_lr0.05_neg10_rows3000_20251028_215637"
+eval_csv_abs: "/Users/honokakobayashi/dev/Univ/Research/output/dim3_ep200_lr0.05_neg10_rows3000_20251028_215637/eval.csv"
+evaluation_output: "evaluation_python_no_closure.txt"
+use_transitive_closure: false
+```
+
+出力は以下のようなファイル。
+```zsh
+output/
+└── /Users/honokakobayashi/dev/Univ/Research/output/dim3_ep200_lr0.05_neg10_rows3000_20251028_215637_python_transitiveFalse
+    ├── embedding_python.csv
+    └── evaluation_python_no_closure.txt
 ```
