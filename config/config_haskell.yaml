@@ -1,11 +1,11 @@
 # --- dataset generation ---
-n_lines: 150
+n_lines: 1000
 filter_nouns: true
-use_transitive_closure: true
-
+use_transitive_closure: false
+head: true
 # --- training settings ---
-dim: 5
-epochs: 100
+dim: 3
+epochs: 200
 baseLR: 0.05
 negK: 10
 burnC: 0.1

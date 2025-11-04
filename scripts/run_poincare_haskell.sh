@@ -8,6 +8,7 @@ echo "Running Poincare pipeline using config: $CONFIG_FILE"
 echo "======================================"
 
 dim=$(yq '.dim' "$CONFIG_FILE")
+head=$(yq '.head' "$CONFIG_FILE") # true/false を保持
 epochs=$(yq '.epochs' "$CONFIG_FILE")
 baseLR=$(yq '.baseLR' "$CONFIG_FILE")
 negK=$(yq '.negK' "$CONFIG_FILE")
@@ -18,8 +19,16 @@ n_lines=$(yq '.n_lines' "$CONFIG_FILE")
 filter_nouns=$(yq '.filter_nouns' "$CONFIG_FILE")
 use_transitive_closure=$(yq '.use_transitive_closure' "$CONFIG_FILE")
 timestamp=$(date +"%Y%m%d_%H%M%S")
-run_name="dim${dim}_ep${epochs}_lr${baseLR}_neg${negK}_rows${n_lines}_${timestamp}"
-output_dir="output/${run_name}"
+run_name="dim${dim}_ep${epochs}_lr${baseLR}_neg${negK}_rows${n_lines}_${timestamp}_transitive${use_transitive_closure}"
+
+if [ "$head" = "true" ]; then
+    run_name="${run_name}_head"
+else
+    # headがtrueでない場合 (_random)
+    run_name="${run_name}_random"
+fi
+
+output_dir="output/Haskell/${run_name}"
 mkdir -p "$output_dir"
 
 echo "Run name   : $run_name"
@@ -27,9 +36,17 @@ echo "Output dir : $output_dir"
 echo "======================================"
 
 echo ">>> Step1: Generating random train/eval data"
-python3 /Users/honokakobayashi/dev/Univ/Research/app/dataGenerationRandom.py \
-  "$n_lines" "$filter_nouns" "$output_dir"
+# head変数の値に基づいて実行するPythonスクリプトを決定
+if [ "$head" = "true" ]; then
+    script_to_run="/Users/honokakobayashi/dev/Univ/Research/app/datageneration.py"
+    echo "Running dataGeneration.py (Head/Ordered mode)"
+else
+    script_to_run="/Users/honokakobayashi/dev/Univ/Research/app/dataGenerationRandom.py"
+    echo "Running dataGenerationRandom.py (Random mode)"
+fi
 
+python3 "$script_to_run" \
+  "$n_lines" "$filter_nouns" "$output_dir"
 train_csv="${output_dir}/train.csv"
 eval_csv="${output_dir}/eval.csv"
 
@@ -40,7 +57,7 @@ if [ "$use_transitive_closure" = "true" ]; then
   train_csv="${output_dir}/train_closure.csv"
   echo "Using transitive closure for training"
 else
-  echo ">>> Step0.5: Skipping transitive closure"
+  echo ">>> Step1.5: Skipping transitive closure"
 fi
 
 echo ">>> Step2: Running PoincareBatch.hs"
@@ -50,23 +67,15 @@ docker-compose exec hasktorch /bin/bash -c "
     $dim $epochs $baseLR $negK $burnC $burnEpochs $batchSize \
     $train_csv $output_dir/embeddings.csv $output_dir/learning_curve.png
 "
-echo ">>> Step3: Running Python Poincaré embedding (Gensim)"
-python3 /Users/honokakobayashi/dev/Univ/Research/app/poincare.py "$train_csv" "$output_dir"
 
-echo ">>> Step4: Haskell embeddings evaluation"
-eval_output="$output_dir/evaluation_results.txt"
+echo ">>> Step3: Python embeddings evaluation"
+python3 /Users/honokakobayashi/dev/Univ/Research/app/evaluation.py \
+  "$output_dir/embeddings.csv" \
+  "$eval_csv" \
+  "$train_csv" \
+  "$output_dir/evaluation.txt"
 
-docker-compose exec hasktorch /bin/bash -c "
-  cd /home/ubuntu/Research && \
-  stack run Evaluation $output_dir/embeddings.csv $eval_csv $train_csv $eval_output
-"
-echo ">>> Step5: Python embeddings evaluation"
-docker-compose exec hasktorch /bin/bash -c "
-  cd /home/ubuntu/Research && \
-  stack run Evaluation $output_dir/embedding_python.csv $eval_csv $train_csv $output_dir/evaluation_python.txt
-"
-
-echo ">>> Step6: Visualizing embeddings"
+echo ">>> Step4: Visualizing embeddings"
 python3 /Users/honokakobayashi/dev/Univ/Research/app/visualize.py \
   "$output_dir/embeddings.csv" "$output_dir/poincare_disk.pdf"
 

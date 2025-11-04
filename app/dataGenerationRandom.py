@@ -17,8 +17,8 @@ conn = sqlite3.connect("/Users/honokakobayashi/dev/Univ/Research/data/wnjpn.db")
 
 query = """
 SELECT 
-    w2.lemma AS hyper,
-    w1.lemma AS hypo
+    w1.lemma AS hyper,
+    w2.lemma AS hypo
 FROM synlink AS sl
 INNER JOIN synset AS sy1 ON sy1.synset = sl.synset1
 INNER JOIN synset AS sy2 ON sy2.synset = sl.synset2

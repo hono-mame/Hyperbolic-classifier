@@ -1,5 +1,4 @@
-train_csv_abs: "/Users/honokakobayashi/dev/Univ/Research/output/dim3_ep200_lr0.05_neg10_rows3000_20251028_215637/train.csv"
-output_dir_abs: "/Users/honokakobayashi/dev/Univ/Research/output/dim3_ep200_lr0.05_neg10_rows3000_20251028_215637"
-eval_csv_abs: "/Users/honokakobayashi/dev/Univ/Research/output/dim3_ep200_lr0.05_neg10_rows3000_20251028_215637/eval.csv"
-evaluation_output: "evaluation_python_no_closure.txt"
+n_lines: 500000
+filter_nouns: true
 use_transitive_closure: false
+head: true

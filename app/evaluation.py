@@ -8,6 +8,10 @@ import time
 from typing import Dict, List, Tuple, Set
 from collections import defaultdict
 
+# Plotting libraries
+import numpy as np
+import matplotlib.pyplot as plt
+
 # ============================================================
 # --- Poincaré Distance Function (Haskell版準拠) ---
 # ============================================================
@@ -91,6 +95,49 @@ def avg_precision(gold_set: Set[str], ranked_list: List[str]) -> float:
     return sum_precisions / len(gold_set)
 
 # ============================================================
+# --- Plotting Function ---
+# ============================================================
+def plot_histograms(results: List[Tuple[float, float]], output_base_path: str):
+    """
+    RankとMAPのヒストグラムを生成し、PNGファイルとして保存します。
+    """
+    if not results:
+        print("[WARNING] No results to plot.")
+        return
+
+    ranks = np.array([r for r, _ in results])
+    maps = np.array([ap for _, ap in results])
+
+    # --- Rank Histogram ---
+    plt.figure(figsize=(10, 6))
+    # Rankは値が広範囲にわたる可能性があるため、Y軸を対数スケールに設定
+    plt.hist(ranks, bins=50, log=True, color='#1f77b4', edgecolor='black')
+    plt.axvline(ranks.mean(), color='r', linestyle='dashed', linewidth=1, label=f'Mean Rank: {ranks.mean():.2f}')
+    plt.title('Distribution of Minimum Ranks (Lower is Better)', fontsize=16)
+    plt.xlabel('Minimum Rank', fontsize=14)
+    plt.ylabel('Frequency (Log Scale)', fontsize=14)
+    plt.legend()
+    rank_plot_path = f"{output_base_path}_rank_hist.png"
+    plt.savefig(rank_plot_path, bbox_inches='tight')
+    plt.close()
+    print(f"[INFO] Saved Rank Histogram to: {rank_plot_path}")
+
+    # --- MAP Histogram ---
+    plt.figure(figsize=(10, 6))
+    # MAPは0から1の範囲
+    plt.hist(maps, bins=20, range=(0, 1), color='#ff7f0e', edgecolor='black')
+    plt.axvline(maps.mean(), color='r', linestyle='dashed', linewidth=1, label=f'Mean AP (MAP): {maps.mean():.4f}')
+    plt.title('Distribution of Mean Average Precision (MAP)', fontsize=16)
+    plt.xlabel('Average Precision (AP)', fontsize=14)
+    plt.ylabel('Frequency', fontsize=14)
+    plt.legend()
+    map_plot_path = f"{output_base_path}_map_hist.png"
+    plt.savefig(map_plot_path, bbox_inches='tight')
+    plt.close()
+    print(f"[INFO] Saved MAP Histogram to: {map_plot_path}")
+
+
+# ============================================================
 # --- Main Evaluation ---
 # ============================================================
 def main():
@@ -146,14 +193,28 @@ def main():
         candidate_words = [w for w in all_words if w != hyper and w not in known_hypos]
 
         distances = []
+        # hypernymの埋め込みが存在するか確認
+        if hyper not in embeddings:
+            print(f"[WARNING] Skipping hypernym '{hyper}' as it is not in embeddings.")
+            continue
+
         for w in candidate_words:
+            # candidate_wordの埋め込みが存在するか確認（通常はall_wordsに入っているので不要だが念のため）
+            if w not in embeddings:
+                continue
             d = poincare_distance(embeddings[hyper], embeddings[w])
             distances.append((w, d))
+        
+        # 距離でソートし、単語リストを取得
         ranked = [w for w, _ in sorted(distances, key=lambda x: x[1])]
 
+        # 評価対象のハイポニムの最小ランクを見つける
         ranks_found = [ranked.index(h) for h in hypos_eval if h in ranked]
         rank_value = float(min(ranks_found) + 1) if ranks_found else float(len(ranked))
+        
+        # MAPを計算
         ap_value = avg_precision(set(hypos_eval), ranked)
+        
         results.append((rank_value, ap_value))
 
         # --- Debug logging for first N anchors ---
@@ -184,8 +245,13 @@ def main():
 
     mean_rank = sum(r for r, _ in results) / len(results)
     mean_ap = sum(ap for _, ap in results) / len(results)
-
     elapsed = time.time() - start_time
+
+    # --- Plotting Call ---
+    output_base_path = os.path.splitext(result_file)[0]
+    plot_histograms(results, output_base_path)
+
+    # --- Prepare summary text (no print for debug) ---
     summary = "\n".join([
         "--- Filtered Evaluation Results (Link Prediction) ---",
         f"Total Hypernyms (Evaluated): {len(results)}",
@@ -193,17 +259,27 @@ def main():
         f"Mean Average Precision (MAP): {mean_ap}",
         f"Elapsed Time: {elapsed:.2f} sec",
         "",
-        "--- DEBUG (first 5 anchors) ---",
-        "\n".join(debug_texts[:5])
+        "--- DEBUG (First {debug_limit} Anchors) ---",
+        "\n".join(debug_texts)
     ])
 
-    print("\n" + summary)
+    # --- Save text summary ---
     with open(result_file, "w", encoding="utf-8") as f:
         f.write(summary)
 
-    print(f"\n✅ Saved summary to: {result_file}")
-    print("======================================")
+    print(f"[INFO] Saved summary text to: {result_file}")
 
+    # --- Save CSV for rank & MAP distribution ---
+    csv_path = os.path.splitext(result_file)[0] + "_stats.csv"
+    with open(csv_path, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["hypernym", "rank", "MAP", "num_candidates", "num_gold"])
+        for (hyper, hypos_eval), (rank_value, ap_value) in zip(grouped_eval.items(), results):
+            num_candidates = len(all_words) - len(grouped_train.get(hyper, [])) - 1
+            writer.writerow([hyper, rank_value, ap_value, num_candidates, len(hypos_eval)])
+    print(f"[INFO] Saved per-hypernym stats CSV to: {csv_path}")
+
+    print("======================================")
 
 if __name__ == "__main__":
     main()
