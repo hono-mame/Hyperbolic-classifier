@@ -1,0 +1,51 @@
+--- Filtered Evaluation Results (Link Prediction) ---
+Total Hypernyms: 33
+Mean Rank: 1.2121212121212122
+Mean Average Precision (MAP): 0.8890840923479811
+
+--- DEBUG (first 5 anchors) ---
+[DEBUG] Anchor: お宅
+  Eval hyponyms (gold): 棲家 宅 室 屋 居宅 住み家
+  Filtered (train) hypos: アビタシオン ハイム ホーム 住い 住みか 住み処 住処 住家 住居 住屋 実家 室家 家 家作 家処 家宅 家居 家屋 居館 棲み家 自宅 邸 館
+  Candidates after filtering: 30
+  Top 10 nearest words: 棲家 室 住み家 宅 居宅 屋 人家 屋宇 住宅 戸
+  Rank: 1.0
+  Mean Average Precision (MAP): 1.0
+
+
+[DEBUG] Anchor: お家
+  Eval hyponyms (gold): お宅 邸 実家 家 室家 アビタシオン 家作 自宅
+  Filtered (train) hypos: ハイム ホーム 住い 住みか 住み処 住み家 住処 住家 住居 住屋 宅 室 家処 家宅 家居 家屋 居宅 居館 屋 棲み家 棲家 館
+  Candidates after filtering: 31
+  Top 10 nearest words: 家 アビタシオン 自宅 邸 実家 お宅 家作 室家 居住 メゾン
+  Rank: 1.0
+  Mean Average Precision (MAP): 1.0
+
+
+[DEBUG] Anchor: コンドミニアム
+  Eval hyponyms (gold): 家居 居住 住い 住み家 アビタシオン
+  Filtered (train) hypos: お宅 ハイム ホーム 住 住まい 住みか 住み処 住処 住宅 住家 住居 住屋 宅 実家 室 室家 家 家作 家処 家宅 家屋 家所 宿り 居 居宅 居館 屋 棲み家 棲家 自宅 邸 邸宅 館
+  Candidates after filtering: 20
+  Top 10 nearest words: 屋宇 アビタシオン 家居 住み家 住い 入植 お家 人家 メゾン 居住
+  Rank: 2.0
+  Mean Average Precision (MAP): 0.6433333333333333
+
+
+[DEBUG] Anchor: ハウス
+  Eval hyponyms (gold): 自宅 住居 ホーム 家屋 お宅 住屋 家宅 アビタシオン
+  Filtered (train) hypos: ハイム 住い 住みか 住み処 住み家 住処 住家 宅 実家 室 室家 家 家作 家処 家居 居宅 居館 屋 棲み家 棲家 邸 館
+  Candidates after filtering: 31
+  Top 10 nearest words: ホーム 家屋 アビタシオン 自宅 家宅 住屋 住居 お宅 人家 建屋
+  Rank: 1.0
+  Mean Average Precision (MAP): 1.0
+
+
+[DEBUG] Anchor: メゾン
+  Eval hyponyms (gold): 館 居館 居宅 室家 家屋 棲み家 住家
+  Filtered (train) hypos: アビタシオン ハイム ホーム 住い 住みか 住み処 住み家 住処 住居 住屋 宅 実家 室 家 家作 家処 家宅 家居 屋 棲家 自宅 邸
+  Candidates after filtering: 31
+  Top 10 nearest words: 棲み家 居宅 住家 家屋 お宅 居館 人家 館 室家 お家
+  Rank: 1.0
+  Mean Average Precision (MAP): 0.9087301587301587
+
+

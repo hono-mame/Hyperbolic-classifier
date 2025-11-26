@@ -1,0 +1,4 @@
+n_lines: 500000
+filter_nouns: true
+use_transitive_closure: false
+head: true

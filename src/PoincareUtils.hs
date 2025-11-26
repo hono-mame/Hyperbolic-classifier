@@ -2,7 +2,7 @@ module PoincareUtils
     (initializeEmbeddings, printEmbeddings, readWordsFromCSV, readPairsFromCSV,
      poincareDistance, distanceBetweenWords, projectToBall,
      runStepRSGD, train, computeDatasetLoss, saveEmbeddings,
-     makeBatches, sampleNegatives, runStepRSGDBatch, pairLossTensor, trainBatch,
+     makeBatches, sampleNegatives, runStepRSGDBatch, pairLossTensor, trainBatch, readArg,
      Entity, Embedding, Embeddings
     ) where
 
@@ -23,6 +23,7 @@ import Torch.Optim (Gradients (..), grad')
 import Torch.Device()
 import Torch.Autograd (makeIndependent, toDependent)
 import Torch.DType()
+import Text.Read (readMaybe)
 
 type Entity = String
 type Embedding = Tensor
@@ -320,3 +321,9 @@ saveEmbeddings path embs = do
                       ) $ M.toList embs
       csvText = unlines (header : linesText)
   writeFile path csvText
+
+readArg :: Read a => Int -> a -> [String] -> a
+readArg idx def args =
+  if length args > idx
+    then maybe def id (readMaybe (args !! idx))
+    else def
